@@ -19,7 +19,7 @@ end
 
 function Hitbox:draw()
     love.graphics.push("all")
-    love.graphics.setLineWidth(0.5)
+    love.graphics.setLineWidth(1)
     set_color_from_hex("#ff0000")
     love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
     love.graphics.pop()
