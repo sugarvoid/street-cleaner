@@ -3,6 +3,10 @@
 Timer = {}
 Timer.__index = Timer
 
+
+---@param finished_time number
+---@param callback function
+---@param _loop boolean
 function Timer:new(finished_time, callback, _loop)
     local _timer = setmetatable({}, Timer)
     _timer.time = 0

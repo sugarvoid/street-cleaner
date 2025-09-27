@@ -1,5 +1,7 @@
 is_debug_on = false
 
+
+
 love = require("love")
 Object = require "lib.classic"
 logger = require("lib.log")
@@ -8,6 +10,8 @@ flux = require("lib.flux")
 anim8 = require("lib.anim8")
 batteries = require("lib.batteries")
 Signal = require("lib.signal")
+
+logger.info("Starting game")
 
 math.randomseed(os.time())
 
@@ -45,55 +49,17 @@ all_clocks = {
 
 COLORS = {
     BLACK = "#000000",
-    BROWN = "#733e39",
-    DARK_GRAY = "#5a6988",
-    WHITE = "#ffffff",
-    LIGHT_BROWN = "#ead4aa",
     CF_BLUE = "#6495ED",
-}
-
---TODO: Replace places wher I used COLORS
-PALETTE = {
-    BRICK_RED = "#be4a2f",
-    BURNT_ORANGE = "#d77643",
-    PALE_BEIGE = "#ead4aa",
-    PEACH = "#e4a672",
-    BROWN = "#b86f50",
-    DARK_BROWN = "#733e39",
-    DEEP_PLUM = "#3e2731",
-    CRIMSON = "#a22633",
-    RED = "#e43b44",
-    ORANGE = "#f77622",
-    GOLDENROD = "#feae34",
-    LEMON = "#fee761",
-    LIME_GREEN = "#63c74d",
-    GREEN = "#3e8948",
-    FOREST_GREEN = "#265c42",
-    TEAL = "#193c3e",
-    ROYAL_BLUE = "#124e89",
-    SKY_BLUE = "#0099db",
-
     WHITE = "#ffffff",
-    LIGHT_GRAY = "#c0cbdc",
-    GRAY_BLUE = "#8b9bb4",
-    SLATE = "#5a6988",
-    NAVY_BLUE = "#3a4466",
-    DARK_NAVY = "#262b44",
-    NEAR_BLACK = "#181425",
-    HOT_PINK = "#ff0044",
-    PURPLE_GRAY = "#68386c",
-    MAUVE = "#b55088",
-    PINK = "#f6757a",
-    TAN = "#e8b796",
-    TAUPE = "#c28569"
 }
+
 
 local pause_img = love.graphics.newImage("asset/image/pause.png")
 local flash_img = love.graphics.newImage("asset/image/flash.png")
 
 shake_duration = 0
 shake_wait = 0
-shake_offset = {x = 0, y = 0}
+shake_offset = { x = 0, y = 0 }
 
 require("src.clock")
 require("src.enemy")
@@ -103,15 +69,18 @@ require("src.mouse")
 require("lib.timer")
 require("src.hud")
 
-local screen_rect = {x = 0, y = 0, w = 384, h = 216}
-player = {ammo = 6}
+local screen_rect = { x = 0, y = 0, w = 384, h = 216 }
+player = { ammo = 6, max_ammo = 6 }
 mouse = Mouse()
+
+tmr_ammo = Timer:new(60 * 2, function() add_ammo(1) end, true)
+
 game_clock = Clock()
 results_clock = Clock()
 mx, my = 0, 0
 
-all_clocks:add(game_clock)
-all_clocks:add(results_clock)
+all_clocks:add(tmr_ammo)
+--all_clocks:add(results_clock)
 
 local doorGuy = DoorGuy()
 local windowGuy = WindowGuy()
@@ -120,6 +89,8 @@ enemies = {}
 
 table.insert(enemies, doorGuy)
 table.insert(enemies, windowGuy)
+
+tmr_ammo:start()
 
 function love.load()
     set_bgcolor_from_hex(COLORS.CF_BLUE)
@@ -144,9 +115,9 @@ function love.load()
     love.graphics.setFont(font)
 
     -- if your code was optimized for fullHD:
-    window = {translateX = 0, translateY = 0, scale = 3, width = 384, height = 216}
+    window = { translateX = 0, translateY = 0, scale = 3, width = 384, height = 216 }
     width, height = love.graphics.getDimensions()
-    love.window.setMode(width, height, {resizable = true, borderless = false})
+    love.window.setMode(width, height, { resizable = true, borderless = false })
     resize(width, height) -- update new translation and scale
 end
 
@@ -213,16 +184,29 @@ function love.mousepressed(x, y, button, _)
     --mx = math.floor((x - window.translateX) / window.scale + 0.5)
     --my = math.floor((y - window.translateY) / window.scale + 0.5)
 
-    show_flash = 0
-    show_flash = 2
+    shoot()
 
-    for _, e in pairs(enemies) do
-        --if a then
-        e:check_if_hovered()
-        --end
-    end
+
 
     --print("click on " .. mx .. " " .. my)
+end
+
+function shoot()
+    if player.ammo >= 1 then
+        player.ammo = math.clamp(0, player.ammo - 1, player.max_ammo)
+        show_flash = 0
+        show_flash = 2
+
+        for _, e in pairs(enemies) do
+            --if a then
+            e:check_if_hovered()
+            --end
+        end
+    else
+        --TODO: Play empty sound
+    end
+
+    -- body
 end
 
 function love.keypressed(key, scancode, isrepeat)
@@ -234,6 +218,10 @@ function love.keypressed(key, scancode, isrepeat)
     if not isrepeat then
         if key == "escape" then
             quit_game()
+        end
+
+        if key == "r" then
+            love.event.push("quit", "restart")
         end
 
         if game_state == GAME_STATES.title then
@@ -393,13 +381,13 @@ end
 
 function is_on_screen(obj)
     if ((obj.x >= screen_rect.x + screen_rect.w) or
-        (obj.x + obj.w <= screen_rect.x) or
-        (obj.y >= screen_rect.y + screen_rect.h) or
-    (obj.y + obj.h <= screen_rect.y)) then
-    return false
-else
-    return true
-end
+            (obj.x + obj.w <= screen_rect.x) or
+            (obj.y >= screen_rect.y + screen_rect.h) or
+            (obj.y + obj.h <= screen_rect.y)) then
+        return false
+    else
+        return true
+    end
 end
 
 function start_game()
@@ -412,7 +400,7 @@ function start_game()
     spawner:reset()
     shake_duration = 0
     shake_wait = 0
-    shake_offset = {x = 0, y = 0}
+    shake_offset = { x = 0, y = 0 }
 end
 
 function reset_game()
@@ -450,4 +438,8 @@ function load_high_score()
     local score, _ = love.filesystem.read("data.sav")
     score = tonumber(score)
     return score or 0
+end
+
+function add_ammo(n)
+    player.ammo = math.clamp(0, player.ammo + n, player.max_ammo)
 end
