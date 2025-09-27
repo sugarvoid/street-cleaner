@@ -126,12 +126,14 @@ all_clocks:add(results_clock)
 
 
 local doorGuy = DoorGuy()
+local windowGuy = WindowGuy()
 
 
 
 enemies = {}
 
 table.insert(enemies, doorGuy)
+table.insert(enemies, windowGuy)
 
 
 function love.load()
