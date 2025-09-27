@@ -29,19 +29,7 @@ local intro_time = 0
 local high_score = 0
 local level_length = 20
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+local show_flash = 0
 
 all_clocks = {
     __clocks = {},
@@ -101,6 +89,7 @@ PALETTE = {
 }
 
 local pause_img = love.graphics.newImage("asset/image/pause.png")
+local flash_img = love.graphics.newImage("asset/image/flash.png")
 
 shake_duration = 0
 shake_wait = 0
@@ -115,7 +104,7 @@ require("lib.timer")
 require("src.hud")
 
 local screen_rect = {x = 0, y = 0, w = 384, h = 216}
-player = nil
+player = {ammo = 6}
 mouse = Mouse()
 game_clock = Clock()
 results_clock = Clock()
@@ -124,18 +113,13 @@ mx, my = 0, 0
 all_clocks:add(game_clock)
 all_clocks:add(results_clock)
 
-
-
 local doorGuy = DoorGuy()
 local windowGuy = WindowGuy()
-
-
 
 enemies = {}
 
 table.insert(enemies, doorGuy)
 table.insert(enemies, windowGuy)
-
 
 function love.load()
     set_bgcolor_from_hex(COLORS.CF_BLUE)
@@ -149,7 +133,7 @@ function love.load()
         logger.level = logger.Level.DEBUG
         logger.info("logger in INFO mode")
     end
-    
+
     font = love.graphics.newFont("asset/font/mago2.ttf", 32)
     font_hud = love.graphics.newFont("asset/font/mago2.ttf", 64)
 
@@ -177,11 +161,15 @@ end
 function love.update(dt)
     dt = math.min(dt, 1 / 60)
 
+    if show_flash > 0 then
+        show_flash = show_flash - 1
+    end
+
     --doorGuy:update()
 
     for _, a in pairs(enemies) do
         --if a then
-           a:update(dt)
+        a:update(dt)
         --end
     end
 
@@ -225,11 +213,12 @@ function love.mousepressed(x, y, button, _)
     --mx = math.floor((x - window.translateX) / window.scale + 0.5)
     --my = math.floor((y - window.translateY) / window.scale + 0.5)
 
-    
+    show_flash = 0
+    show_flash = 2
 
     for _, e in pairs(enemies) do
         --if a then
-           e:check_if_hovered()
+        e:check_if_hovered()
         --end
     end
 
@@ -297,7 +286,7 @@ function love.draw()
 
     for _, a in pairs(enemies) do
         --if a then
-           a:draw()
+        a:draw()
         --end
     end
 
@@ -313,6 +302,10 @@ function love.draw()
 
     if game_state == GAME_STATES.gameover then
         draw_gameover()
+    end
+
+    if show_flash > 0 then
+        love.graphics.draw(flash_img, 0, 0)
     end
 
     love.graphics.push("all")
@@ -350,8 +343,6 @@ function quit_game()
     love.event.quit()
 end
 
-
-
 function table.remove_item(tbl, item)
     for i, v in ipairs(tbl) do
         if v == item then
@@ -388,7 +379,6 @@ function draw_game()
     end
 end
 
-
 function draw_pause()
     love.graphics.draw(pause_img, -50, 0)
 end
@@ -412,8 +402,6 @@ else
 end
 end
 
-
-
 function start_game()
     game_clock:start()
     spawner:start()
@@ -432,7 +420,6 @@ function reset_game()
     change_gamestate(GAME_STATES.title)
 end
 
-
 function update_game(dt)
     flux.update(dt)
 
@@ -449,8 +436,6 @@ function show_info()
     change_gamestate(GAME_STATES.info)
     --gamestate = gamestates.info
 end
-
-
 
 function save_high_score(score)
     if score > high_score then

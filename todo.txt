@@ -1,0 +1,24 @@
+
+- Code for spawner
+    - tracker guys
+    - 
+
+
+- Code for base enemy
+    - Add shoot timer
+    - Find way to prevent window/door guy from spawning in occupied window
+    - Make body flash away a disaboer 
+
+- Code jumper
+- Code runner
+
+
+- Code door
+- Code window 
+
+
+- Add ammo system 
+    - Add ammo to hud
+
+- Add player health
+    - Add health to hud
