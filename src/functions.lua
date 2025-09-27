@@ -74,12 +74,23 @@ function rnd(a)
     return math.random() * a
 end
 
----comment
+-- ---comment
+-- ---@param t table
+-- ---@return any
+-- function get_random_item(t)
+--     a = a or 1
+--     return t[math.random(#t)]
+-- end
+
 ---@param t table
 ---@return any
 function get_random_item(t)
-    a = a or 1
-    return t[math.random(#t)]
+    local keys = {}
+    for k in pairs(t) do
+        table.insert(keys, k)
+    end
+    local random_key = keys[math.random(#keys)]
+    return t[random_key]
 end
 
 ---Play a sound, even if one is playing
@@ -87,4 +98,32 @@ end
 function play_sound(s)
     local _s = s:clone()
     _s:play()
+end
+
+
+-- function table.for_each(list)
+--     local _i = 0
+--     return function()
+--         _i = _i + 1; return list[_i]
+--     end
+-- end
+
+
+function table.for_each(_list)
+    local i = 0
+    return function()
+        i = i + 1; return _list[i]
+    end
+end
+
+
+function is_colliding(rect_a, rect_b)
+    if ((rect_a.x >= rect_b.x + rect_b.w) or
+        (rect_a.x + rect_a.w <= rect_b.x) or
+        (rect_a.y >= rect_b.y + rect_b.h) or
+    (rect_a.y + rect_a.h <= rect_b.y)) then
+    return false
+else
+    return true
+end
 end

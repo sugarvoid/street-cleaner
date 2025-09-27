@@ -1,5 +1,5 @@
 #!/bin/bash
-zip -9 -r down_mail.love . \
+zip -9 -r street-cleaner.love . \
     --exclude '*.git*' \
     '*.vscode*' \
     'gameplay.mp4'\

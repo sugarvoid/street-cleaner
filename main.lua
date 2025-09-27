@@ -9,6 +9,8 @@ anim8 = require("lib.anim8")
 batteries = require("lib.batteries")
 Signal = require("lib.signal")
 
+math.randomseed(os.time())
+
 if is_debug_on then
     love.profiler = require('lib.profile')
 end
@@ -26,6 +28,20 @@ local game_state = nil
 local intro_time = 0
 local high_score = 0
 local level_length = 20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 all_clocks = {
     __clocks = {},
@@ -91,6 +107,7 @@ shake_wait = 0
 shake_offset = {x = 0, y = 0}
 
 require("src.clock")
+require("src.enemy")
 require("src.hitbox")
 require("src.functions")
 require("src.mouse")
@@ -106,6 +123,17 @@ mx, my = 0, 0
 all_clocks:add(game_clock)
 all_clocks:add(results_clock)
 
+
+
+local doorGuy = DoorGuy()
+
+
+
+enemies = {}
+
+table.insert(enemies, doorGuy)
+
+
 function love.load()
     set_bgcolor_from_hex(COLORS.CF_BLUE)
     change_gamestate(GAME_STATES.title)
@@ -118,7 +146,7 @@ function love.load()
         logger.level = logger.Level.DEBUG
         logger.info("logger in INFO mode")
     end
-    math.randomseed(os.time())
+    
     font = love.graphics.newFont("asset/font/mago2.ttf", 32)
     font_hud = love.graphics.newFont("asset/font/mago2.ttf", 64)
 
@@ -145,6 +173,14 @@ end
 
 function love.update(dt)
     dt = math.min(dt, 1 / 60)
+
+    --doorGuy:update()
+
+    for _, a in pairs(enemies) do
+        --if a then
+           a:update(dt)
+        --end
+    end
 
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
     my = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
@@ -186,7 +222,15 @@ function love.mousepressed(x, y, button, _)
     --mx = math.floor((x - window.translateX) / window.scale + 0.5)
     --my = math.floor((y - window.translateY) / window.scale + 0.5)
 
-    print("click on " .. mx .. " " .. my)
+    
+
+    for _, e in pairs(enemies) do
+        --if a then
+           e:check_if_hovered()
+        --end
+    end
+
+    --print("click on " .. mx .. " " .. my)
 end
 
 function love.keypressed(key, scancode, isrepeat)
@@ -248,6 +292,12 @@ function love.draw()
 
     love.graphics.draw(background_img, 0, 0)
 
+    for _, a in pairs(enemies) do
+        --if a then
+           a:draw()
+        --end
+    end
+
     mouse:draw()
 
     if game_state == GAME_STATES.title then
@@ -295,12 +345,7 @@ function quit_game()
     love.event.quit()
 end
 
-function table.for_each(list)
-    local _i = 0
-    return function()
-        _i = _i + 1; return list[_i]
-    end
-end
+
 
 function table.remove_item(tbl, item)
     for i, v in ipairs(tbl) do
@@ -362,16 +407,7 @@ else
 end
 end
 
-function is_colliding(rect_a, rect_b)
-    if ((rect_a.x >= rect_b.x + rect_b.w) or
-        (rect_a.x + rect_a.w <= rect_b.x) or
-        (rect_a.y >= rect_b.y + rect_b.h) or
-    (rect_a.y + rect_a.h <= rect_b.y)) then
-    return false
-else
-    return true
-end
-end
+
 
 function start_game()
     game_clock:start()
@@ -409,12 +445,7 @@ function show_info()
     --gamestate = gamestates.info
 end
 
-function table.for_each(_list)
-    local i = 0
-    return function()
-        i = i + 1; return _list[i]
-    end
-end
+
 
 function save_high_score(score)
     if score > high_score then

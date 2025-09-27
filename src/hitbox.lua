@@ -1,8 +1,8 @@
 Hitbox = Object:extend()
 
 function Hitbox:new(owner, x, y, w, h, ox, oy)
-    self.x = x
-    self.y = y
+    self.x = x or 0
+    self.y = y or 0
     self.w = w
     self.h = h
     self.__ox = ox or 0
@@ -12,8 +12,8 @@ end
 
 function Hitbox:update()
     if self.__owner then
-        self.x = self.__owner.x + self.__ox
-        self.y = self.__owner.y + self.__oy
+        self.x = self.__owner.position.x + self.__ox
+        self.y = self.__owner.position.y + self.__oy
     end
 end
 
