@@ -112,6 +112,7 @@ require("src.hitbox")
 require("src.functions")
 require("src.mouse")
 require("lib.timer")
+require("src.hud")
 
 local screen_rect = {x = 0, y = 0, w = 384, h = 216}
 player = nil
@@ -318,6 +319,8 @@ function love.draw()
     set_color_from_hex(COLORS.BLACK)
     love.graphics.rectangle("fill", 0, 180, 384, 40)
     love.graphics.pop()
+
+    hud:draw()
 
     if game_state == GAME_STATES.pause then
         draw_game()

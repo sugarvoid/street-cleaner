@@ -23,18 +23,19 @@ function anim_done(s)
 end
 
 DOOR_SPAWN_POS = {
-    {x=115, y=80},
-    {x=325, y=65},
+    {position={x=115, y=80}},
+    {position={x=325, y=65}},
 }
 
 WINDOW_SPAWN_POS = {
 
-    {x=33-12,y=37-12},
-    {x=81-12,y=37-12},
-    {x=129-12,y=37-12},
-    {x=288-12,y=20-12},
-    {x=337-12,y=20-12},
-    {x=228-12,y=72-12},
+    {position={x=21,y=25}},
+    {position={x=69,y=25}},
+    {position={x=117,y=25}},
+
+    {position={x=276,y=8}},
+    {position={x=325,y=8}},
+    {position={x=276,y=60}},
 }
 
 
@@ -42,6 +43,7 @@ WINDOW_SPAWN_POS = {
 all_ships = {}
 
 function BaseEnemy:new()
+    self.location = nil
     self.position = {x = 0, y = 0}
     self.sprite = nil
     self.scale = 1
@@ -83,7 +85,7 @@ DoorGuy = BaseEnemy:extend()
 function DoorGuy:new()
     DoorGuy.super.new(self)
     self.id = "door_01"
-    self.position = get_random_item(DOOR_SPAWN_POS)
+    self.position = get_random_item(DOOR_SPAWN_POS).position
     self.spr_sheet = DOOR_SPR
     self.hitbox = Hitbox(self, 0, 0, 25, 42)
 
@@ -122,7 +124,7 @@ WindowGuy = BaseEnemy:extend()
 function WindowGuy:new()
     WindowGuy.super.new(self)
     self.id = "door_01"
-    self.position = get_random_item(WINDOW_SPAWN_POS)
+    self.position = get_random_item(WINDOW_SPAWN_POS).position
     self.spr_sheet = WINDOW_SPR
     self.hitbox = Hitbox(self, 0, 0, 24, 24)
 
