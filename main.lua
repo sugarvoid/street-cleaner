@@ -84,6 +84,7 @@ all_clocks:add(tmr_ammo)
 local doorGuy = DoorGuy()
 local windowGuy = WindowGuy()
 local runnerGuy = RunnerGuy()
+local jumperGuy = JumperGuy()
 
 enemies = {}
 blood_container = {}
@@ -91,6 +92,7 @@ blood_container = {}
 table.insert(enemies, doorGuy)
 table.insert(enemies, windowGuy)
 table.insert(enemies, runnerGuy)
+table.insert(enemies, jumperGuy)
 
 tmr_ammo:start()
 

@@ -10,8 +10,8 @@ local WINDOW_GRID = anim8.newGrid(24, 24, WINDOW_SPR:getWidth(), WINDOW_SPR:getH
 local RUNNER_SPR = love.graphics.newImage("asset/image/runner_sheet.png")
 local RUNNER_GRID = anim8.newGrid(42, 42, RUNNER_SPR:getWidth(), RUNNER_SPR:getHeight())
 
-local JUMPER_SPR = love.graphics.newImage("asset/image/door_sheet.png")
-local JUMPER_GRID = anim8.newGrid(26, 42, DOOR_SPR:getWidth(), DOOR_SPR:getHeight())
+local JUMPER_SPR = love.graphics.newImage("asset/image/jumper_sheet.png")
+local JUMPER_GRID = anim8.newGrid(24, 40, JUMPER_SPR:getWidth(), JUMPER_SPR:getHeight())
 
 -- function anim_done(s)
 --     print(s .. " animation is done")
@@ -85,7 +85,8 @@ DoorGuy = BaseEnemy:extend()
 function DoorGuy:new()
     DoorGuy.super.new(self)
     self.id = "door_01"
-    self.position = get_random_item(DOOR_SPAWN_POS).position
+    local _spawn = get_random_item(DOOR_SPAWN_POS).position
+    self.position = {x=_spawn.x, y=_spawn.y}
     self.spr_sheet = DOOR_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 42, 2)
 
@@ -118,7 +119,10 @@ function WindowGuy:new()
     WindowGuy.super.new(self)
     self.id = "door_01"
  
-    self.position = get_random_item(WINDOW_SPAWN_POS).position
+   -- self.position = get_random_item(WINDOW_SPAWN_POS).position
+
+    local _spawn = get_random_item(WINDOW_SPAWN_POS).position
+    self.position = {x=_spawn.x, y=_spawn.y}
     self.spr_sheet = WINDOW_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 24, 2)
     
@@ -152,9 +156,10 @@ RunnerGuy = BaseEnemy:extend()
 function RunnerGuy:new()
     RunnerGuy.super.new(self)
     self.id = "door_01"
-       self.name = "runner"
+    self.name = "runner"
     self.speed = -25
-    self.position =  {x=150, y=100}-- get_random_item(WINDOW_SPAWN_POS).position
+    --TODO: Make positions random-ish
+    self.position =  {x=150, y=100}
     self.spr_sheet = RUNNER_SPR
     self.hitbox = Hitbox(self, 0, 0, 16, 38, 16, 3)
 
@@ -175,8 +180,7 @@ end
 
 function RunnerGuy:anim_done(s)
     if s == "enter" then
-        --self.current_anim:gotoFrame(3)
-        --self.current_anim:pause()
+
     elseif s == "die" then
         print("dying done")
         self.speed = 0
@@ -187,3 +191,50 @@ end
 
 
 JumperGuy = BaseEnemy:extend()
+
+function JumperGuy:new()
+    JumperGuy.super.new(self)
+    self.id = "door_01"
+    self.name = "jumper"
+    self.speed = -25
+    
+    --TODO: Make a better function that all enemey types can use (DRY)
+    local _spawn = get_random_item(WINDOW_SPAWN_POS).position
+    self.position = {x=_spawn.x, y=_spawn.y}
+    self.starting_y = self.position.y
+    self.peak_y = self.starting_y - 10
+    self.landing_y = 110
+    self.spr_sheet = JUMPER_SPR
+    self.hitbox = Hitbox(self, 0, 0, 20, 32, 4, 3)
+
+    self.animations.enter = anim8.newAnimation(JUMPER_GRID(('1-3'), 1), 1, function()self:anim_done("enter") end)
+    self.animations.die = anim8.newAnimation(JUMPER_GRID(('4-6'), 1), 0.2, function()self:anim_done("die") end)
+
+    if math.random(0, 1) == 0 then
+        self.speed = self.speed * -1
+        for _, a in pairs(self.animations) do
+            if a then
+                a:flipH()
+            end
+        end
+    end
+
+    self.current_anim = self.animations.enter
+
+    self.current_anim:pause()
+    self.current_anim:gotoFrame(2)
+
+    flux.to(self.position, 0.1, {y=self.peak_y}):oncomplete(function()  self.current_anim:gotoFrame(3) end):after(self.position, 0.4, {y=self.landing_y}):oncomplete(function()  self.current_anim:gotoFrame(1) end)
+
+end
+
+function JumperGuy:anim_done(s)
+    if s == "enter" then
+
+    elseif s == "die" then
+        print("dying done")
+        self.speed = 0
+        self.current_anim:gotoFrame(3)
+        self.current_anim:pause()
+    end
+end
