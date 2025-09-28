@@ -53,6 +53,7 @@ COLORS = {
 
 local pause_img = love.graphics.newImage("asset/image/pause.png")
 local flash_img = love.graphics.newImage("asset/image/flash.png")
+local wall = love.graphics.newImage("asset/image/wall.png")
 
 shake_duration = 0
 shake_wait = 0
@@ -82,12 +83,14 @@ all_clocks:add(tmr_ammo)
 
 local doorGuy = DoorGuy()
 local windowGuy = WindowGuy()
+local runnerGuy = RunnerGuy()
 
 enemies = {}
 blood_container = {}
 
 table.insert(enemies, doorGuy)
 table.insert(enemies, windowGuy)
+table.insert(enemies, runnerGuy)
 
 tmr_ammo:start()
 
@@ -279,6 +282,8 @@ function love.draw()
     for _, a in pairs(enemies) do
         a:draw()
     end
+
+    love.graphics.draw(wall, 150, 135)
 
     for _, b in pairs(blood_container) do
         b:draw()
