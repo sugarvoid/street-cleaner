@@ -9,6 +9,10 @@ function get_next_time(min_sec, max_sec)
     return math.random(_min, _max)
 end
 
+function get_rnd(min, max)
+    return love.math.random(min, max)
+end
+
 function set_color_from_hex(rgba)
     --setColorHEX(rgba)
     --where rgba is string as "#336699cc"

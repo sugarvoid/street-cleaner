@@ -45,6 +45,8 @@ function BaseEnemy:new()
     self.moving_dir = {0, 0}
     self.speed = nil
     self.current_anim = nil
+    self.shoot_cooldown = get_rnd(60 * 2, 60 * 5)
+    self.tmr_shoot = Timer:new(self.shoot_cooldown, function() self:shoot() end, true)
     self.animations = {enter = {}, die = nil, jump = nil, land = nil, run = nil}
 end
 
@@ -60,6 +62,16 @@ function BaseEnemy:check_if_hovered()
     end
 end
 
+function BaseEnemy:shoot()
+    if self.is_alive then
+        print("shooting")
+        self.tmr_shoot:stop()
+        player:take_damage()
+        self.shoot_cooldown = get_rnd(60 * 3, 60 * 5)
+        self.tmr_shoot:start()
+    end
+end
+
 function BaseEnemy:on_hit()
     print(self)
     BloodFx(mx, my, blood_container)
@@ -69,7 +81,7 @@ function BaseEnemy:on_hit()
 end
 
 function BaseEnemy:update(dt)
-
+    self.tmr_shoot:update()
     self.hitbox:update()
     self.current_anim:update(dt)
     if self.name == "runner" then
@@ -86,7 +98,7 @@ function DoorGuy:new()
     DoorGuy.super.new(self)
     self.id = "door_01"
     local _spawn = get_random_item(DOOR_SPAWN_POS).position
-    self.position = {x=_spawn.x, y=_spawn.y}
+    self.position = {x = _spawn.x, y = _spawn.y}
     self.spr_sheet = DOOR_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 42, 2)
 
@@ -104,6 +116,7 @@ end
 
 function DoorGuy:anim_done(s)
     if s == "enter" then
+        self.tmr_shoot:start()
         self.current_anim:gotoFrame(3)
         self.current_anim:pause()
     elseif s == "die" then
@@ -118,14 +131,14 @@ WindowGuy = BaseEnemy:extend()
 function WindowGuy:new()
     WindowGuy.super.new(self)
     self.id = "door_01"
- 
-   -- self.position = get_random_item(WINDOW_SPAWN_POS).position
+
+    -- self.position = get_random_item(WINDOW_SPAWN_POS).position
 
     local _spawn = get_random_item(WINDOW_SPAWN_POS).position
-    self.position = {x=_spawn.x, y=_spawn.y}
+    self.position = {x = _spawn.x, y = _spawn.y}
     self.spr_sheet = WINDOW_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 24, 2)
-    
+
     self.animations.enter = anim8.newAnimation(WINDOW_GRID(('1-3'), 1), 0.2, function()self:anim_done("enter") end)
     self.animations.die = anim8.newAnimation(WINDOW_GRID(('4-6'), 1), 0.2, function()self:anim_done("die") end)
 
@@ -142,6 +155,7 @@ end
 
 function WindowGuy:anim_done(s)
     if s == "enter" then
+        self.tmr_shoot:start()
         self.current_anim:gotoFrame(3)
         self.current_anim:pause()
     elseif s == "die" then
@@ -159,7 +173,7 @@ function RunnerGuy:new()
     self.name = "runner"
     self.speed = -25
     --TODO: Make positions random-ish
-    self.position =  {x=150, y=100}
+    self.position = {x = 150, y = 100}
     self.spr_sheet = RUNNER_SPR
     self.hitbox = Hitbox(self, 0, 0, 16, 38, 16, 3)
 
@@ -189,7 +203,6 @@ function RunnerGuy:anim_done(s)
     end
 end
 
-
 JumperGuy = BaseEnemy:extend()
 
 function JumperGuy:new()
@@ -197,10 +210,10 @@ function JumperGuy:new()
     self.id = "door_01"
     self.name = "jumper"
     self.speed = -25
-    
+
     --TODO: Make a better function that all enemey types can use (DRY)
     local _spawn = get_random_item(WINDOW_SPAWN_POS).position
-    self.position = {x=_spawn.x, y=_spawn.y}
+    self.position = {x = _spawn.x, y = _spawn.y}
     self.starting_y = self.position.y
     self.peak_y = self.starting_y - 10
     self.landing_y = 110
@@ -224,7 +237,10 @@ function JumperGuy:new()
     self.current_anim:pause()
     self.current_anim:gotoFrame(2)
 
-    flux.to(self.position, 0.1, {y=self.peak_y}):oncomplete(function()  self.current_anim:gotoFrame(3) end):after(self.position, 0.4, {y=self.landing_y}):oncomplete(function()  self.current_anim:gotoFrame(1) end)
+    flux.to(self.position, 0.1, {y = self.peak_y}):oncomplete(
+        function() self.current_anim:gotoFrame(3)
+        end):after(self.position, 0.4, {y = self.landing_y}):oncomplete(
+    function() self.current_anim:gotoFrame(1) self.tmr_shoot:start() end)
 
 end
 

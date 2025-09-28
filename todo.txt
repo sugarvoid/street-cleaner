@@ -7,7 +7,9 @@
 - Code for base enemy
     - Add shoot timer
     - Find way to prevent window/door guy from spawning in occupied window
-    - Make body flash away a disaboer 
+    - Make body flash away a disappear 
+    - Add shoot fx
+    - Add alert fx
 
 - Code jumper
 - Code runner
@@ -22,3 +24,4 @@
 
 - Add player health
     - Add health to hud
+

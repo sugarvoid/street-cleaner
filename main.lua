@@ -32,6 +32,7 @@ local high_score = 0
 local level_length = 20
 
 local show_flash = 0
+local show_hurt = 0
 
 all_clocks = {
     __clocks = {},
@@ -53,6 +54,7 @@ COLORS = {
 
 local pause_img = love.graphics.newImage("asset/image/pause.png")
 local flash_img = love.graphics.newImage("asset/image/flash.png")
+local hurt_img = love.graphics.newImage("asset/image/player_hit.png")
 local wall = love.graphics.newImage("asset/image/wall.png")
 
 shake_duration = 0
@@ -67,9 +69,23 @@ require("src.mouse")
 require("lib.timer")
 require("src.hud")
 require("src.blood_fx")
+require("src.player_hit_fx")
 
 local screen_rect = {x = 0, y = 0, w = 384, h = 216}
-player = {ammo = 6, max_ammo = 6, health = 6, max_health = 6}
+player = {
+    ammo = 6,
+    max_ammo = 6,
+    health = 6,
+    max_health = 6,
+    take_damage = function(self)
+        print("taking damage")
+        self.health = math.clamp(0, self.health - 1, self.max_health)
+        show_hurt = 0
+        show_hurt = 2
+        PlayerHit(bhit_container)
+    end
+}
+
 mouse = Mouse()
 
 tmr_ammo = Timer:new(60 * 2, function() add_ammo(1) end, true)
@@ -88,6 +104,7 @@ local jumperGuy = JumperGuy()
 
 enemies = {}
 blood_container = {}
+bhit_container = {}
 
 table.insert(enemies, doorGuy)
 table.insert(enemies, windowGuy)
@@ -140,6 +157,10 @@ function love.update(dt)
         show_flash = show_flash - 1
     end
 
+    if show_hurt > 0 then
+        show_hurt = show_hurt - 1
+    end
+
     --doorGuy:update()
 
     for _, a in pairs(enemies) do
@@ -151,6 +172,12 @@ function love.update(dt)
     for _, b in pairs(blood_container) do
         --if a then
         b:update(dt)
+        --end
+    end
+
+    for _, bh in pairs(bhit_container) do
+        --if a then
+        bh:update(dt)
         --end
     end
 
@@ -207,9 +234,9 @@ function shoot()
         --shake_duration=0.1
 
         for _, e in pairs(enemies) do
-            --if a then
+
             e:check_if_hovered()
-            --end
+
         end
     else
         --TODO: Play empty sound
@@ -291,6 +318,10 @@ function love.draw()
         b:draw()
     end
 
+    for _, bh in pairs(bhit_container) do
+        bh:draw()
+    end
+
     mouse:draw()
 
     if game_state == GAME_STATES.title then
@@ -307,6 +338,10 @@ function love.draw()
 
     if show_flash > 0 then
         love.graphics.draw(flash_img, 0, 0)
+    end
+
+    if show_hurt > 0 then
+        love.graphics.draw(hurt_img, 0, 0)
     end
 
     love.graphics.push("all")
