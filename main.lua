@@ -1,7 +1,5 @@
 is_debug_on = false
 
-
-
 love = require("love")
 Object = require "lib.classic"
 logger = require("lib.log")
@@ -53,13 +51,12 @@ COLORS = {
     WHITE = "#ffffff",
 }
 
-
 local pause_img = love.graphics.newImage("asset/image/pause.png")
 local flash_img = love.graphics.newImage("asset/image/flash.png")
 
 shake_duration = 0
 shake_wait = 0
-shake_offset = { x = 0, y = 0 }
+shake_offset = {x = 0, y = 0}
 
 require("src.clock")
 require("src.enemy")
@@ -68,9 +65,10 @@ require("src.functions")
 require("src.mouse")
 require("lib.timer")
 require("src.hud")
+require("src.blood_fx")
 
-local screen_rect = { x = 0, y = 0, w = 384, h = 216 }
-player = { ammo = 6, max_ammo = 6 }
+local screen_rect = {x = 0, y = 0, w = 384, h = 216}
+player = {ammo = 6, max_ammo = 6, health = 6, max_health = 6}
 mouse = Mouse()
 
 tmr_ammo = Timer:new(60 * 2, function() add_ammo(1) end, true)
@@ -86,6 +84,7 @@ local doorGuy = DoorGuy()
 local windowGuy = WindowGuy()
 
 enemies = {}
+blood_container = {}
 
 table.insert(enemies, doorGuy)
 table.insert(enemies, windowGuy)
@@ -94,7 +93,7 @@ tmr_ammo:start()
 
 function love.load()
     set_bgcolor_from_hex(COLORS.CF_BLUE)
-    change_gamestate(GAME_STATES.title)
+    change_gamestate(GAME_STATES.game)
     high_score = load_high_score()
     if is_debug_on then
         logger.level = logger.Level.DEBUG
@@ -115,9 +114,9 @@ function love.load()
     love.graphics.setFont(font)
 
     -- if your code was optimized for fullHD:
-    window = { translateX = 0, translateY = 0, scale = 3, width = 384, height = 216 }
+    window = {translateX = 0, translateY = 0, scale = 3, width = 384, height = 216}
     width, height = love.graphics.getDimensions()
-    love.window.setMode(width, height, { resizable = true, borderless = false })
+    love.window.setMode(width, height, {resizable = true, borderless = false})
     resize(width, height) -- update new translation and scale
 end
 
@@ -144,6 +143,12 @@ function love.update(dt)
         --end
     end
 
+    for _, b in pairs(blood_container) do
+        --if a then
+        b:update(dt)
+        --end
+    end
+
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
     my = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
 
@@ -156,9 +161,9 @@ function love.update(dt)
             if shake_wait > 0 then
                 shake_wait = shake_wait - dt
             else
-                shake_offset.x = love.math.random(-5, 5)
-                shake_offset.y = love.math.random(-5, 5)
-                shake_wait = 0.02
+                shake_offset.x = love.math.random(-1, 1)
+                shake_offset.y = love.math.random(-1, 1)
+                shake_wait = 0.01
             end
         end
         update_game(dt)
@@ -186,8 +191,6 @@ function love.mousepressed(x, y, button, _)
 
     shoot()
 
-
-
     --print("click on " .. mx .. " " .. my)
 end
 
@@ -196,6 +199,7 @@ function shoot()
         player.ammo = math.clamp(0, player.ammo - 1, player.max_ammo)
         show_flash = 0
         show_flash = 2
+        --shake_duration=0.1
 
         for _, e in pairs(enemies) do
             --if a then
@@ -273,9 +277,11 @@ function love.draw()
     love.graphics.draw(background_img, 0, 0)
 
     for _, a in pairs(enemies) do
-        --if a then
         a:draw()
-        --end
+    end
+
+    for _, b in pairs(blood_container) do
+        b:draw()
     end
 
     mouse:draw()
@@ -342,14 +348,11 @@ function table.remove_item(tbl, item)
 end
 
 function goto_gameover(reason)
-    shake_duration = 0
     game_clock:restart()
     spawner:reset()
-    results_clock:restart()
     save_high_score(player.score)
     bg_music:stop()
     change_gamestate(GAME_STATES.gameover)
-
     print("game over: " .. reason)
 end
 
@@ -362,9 +365,7 @@ function draw_day_title()
 end
 
 function draw_game()
-    for s in table.for_each(bones) do
-        s:draw()
-    end
+
 end
 
 function draw_pause()
@@ -381,13 +382,13 @@ end
 
 function is_on_screen(obj)
     if ((obj.x >= screen_rect.x + screen_rect.w) or
-            (obj.x + obj.w <= screen_rect.x) or
-            (obj.y >= screen_rect.y + screen_rect.h) or
-            (obj.y + obj.h <= screen_rect.y)) then
-        return false
-    else
-        return true
-    end
+        (obj.x + obj.w <= screen_rect.x) or
+        (obj.y >= screen_rect.y + screen_rect.h) or
+    (obj.y + obj.h <= screen_rect.y)) then
+    return false
+else
+    return true
+end
 end
 
 function start_game()
@@ -400,20 +401,19 @@ function start_game()
     spawner:reset()
     shake_duration = 0
     shake_wait = 0
-    shake_offset = { x = 0, y = 0 }
+    shake_offset = {x = 0, y = 0}
 end
 
 function reset_game()
     player_score = 0
     change_gamestate(GAME_STATES.title)
+    for b in pairs(blood_container) do
+        blood_container[b] = nil
+    end
 end
 
 function update_game(dt)
     flux.update(dt)
-
-    for s in table.for_each(bones) do
-        s:update(dt)
-    end
 end
 
 function update_pause()

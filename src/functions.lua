@@ -100,7 +100,6 @@ function play_sound(s)
     _s:play()
 end
 
-
 -- function table.for_each(list)
 --     local _i = 0
 --     return function()
@@ -108,14 +107,12 @@ end
 --     end
 -- end
 
-
 function table.for_each(_list)
     local i = 0
     return function()
         i = i + 1; return _list[i]
     end
 end
-
 
 function is_colliding(rect_a, rect_b)
     if ((rect_a.x >= rect_b.x + rect_b.w) or
@@ -126,4 +123,16 @@ function is_colliding(rect_a, rect_b)
 else
     return true
 end
+end
+
+---@param _table table
+---@param _item any
+function del(_table, _item)
+    for i, v in ipairs(_table) do
+        if v == _item then
+            _table[i] = _table[#_table]
+            _table[#_table] = nil
+            return
+        end
+    end
 end

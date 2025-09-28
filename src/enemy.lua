@@ -7,38 +7,34 @@ local DOOR_GRID = anim8.newGrid(26, 42, DOOR_SPR:getWidth(), DOOR_SPR:getHeight(
 local WINDOW_SPR = love.graphics.newImage("asset/image/window_guy.png")
 local WINDOW_GRID = anim8.newGrid(24, 24, WINDOW_SPR:getWidth(), WINDOW_SPR:getHeight())
 
-
 local RUNNER_SPR = love.graphics.newImage("asset/image/door_sheet.png")
 local RUNNER_GRID = anim8.newGrid(26, 42, DOOR_SPR:getWidth(), DOOR_SPR:getHeight())
 
-
 local JUMPER_SPR = love.graphics.newImage("asset/image/door_sheet.png")
 local JUMPER_GRID = anim8.newGrid(26, 42, DOOR_SPR:getWidth(), DOOR_SPR:getHeight())
-
 
 -- function anim_done(s)
 --     print(s .. " animation is done")
 -- end
 
 DOOR_SPAWN_POS = {
-    {position={x=115, y=80}},
-    {position={x=325, y=65}},
+    {id = "d1", avilible = true, position = {x = 115, y = 80}},
+    {id = "d2", avilible = true, position = {x = 325, y = 65}},
 }
 
 WINDOW_SPAWN_POS = {
+    {id = "w1", avilible = true, position = {x = 21, y = 25}},
+    {id = "w2", avilible = true, position = {x = 69, y = 25}},
+    {id = "w3", avilible = true, position = {x = 117, y = 25}},
 
-    {position={x=21,y=25}},
-    {position={x=69,y=25}},
-    {position={x=117,y=25}},
-
-    {position={x=276,y=8}},
-    {position={x=325,y=8}},
-    {position={x=276,y=60}},
+    {id = "w4", avilible = true, position = {x = 276, y = 8}},
+    {id = "w5", avilible = true, position = {x = 325, y = 8}},
+    {id = "w6", avilible = true, position = {x = 276, y = 60}},
 }
-
 
 function BaseEnemy:new()
     self.location = nil
+    self.is_alive = true
     self.position = {x = 0, y = 0}
     self.sprite = nil
     self.scale = 1
@@ -58,13 +54,15 @@ function BaseEnemy:draw()
 end
 
 function BaseEnemy:check_if_hovered()
-    if is_colliding(mouse.hitbox, self.hitbox) then
+    if is_colliding(mouse.hitbox, self.hitbox) and self.is_alive then
         print(self.id .. " been shot")
         self:on_hit()
     end
 end
 
 function BaseEnemy:on_hit()
+    BloodFx(mx, my, blood_container)
+    self.is_alive = false
     self.current_anim = self.animations.die
     self.current_anim:resume()
 end
@@ -92,17 +90,12 @@ function DoorGuy:new()
 
     for _, a in pairs(self.animations) do
         if a then
-           a:flipH()
+            a:flipH()
         end
     end
 
     self.current_anim = self.animations.enter
 end
-
--- function DoorGuy:update(dt)
---     self.hitbox:update()
---     self.current_anim:update(dt)
--- end
 
 function DoorGuy:anim_done(s)
     if s == "enter" then
@@ -127,21 +120,16 @@ function WindowGuy:new()
     self.animations.enter = anim8.newAnimation(WINDOW_GRID(('1-3'), 1), 0.2, function()self:anim_done("enter") end)
     self.animations.die = anim8.newAnimation(WINDOW_GRID(('4-6'), 1), 0.2, function()self:anim_done("die") end)
 
-    if math.random(0,1) == 0 then
+    if math.random(0, 1) == 0 then
         for _, a in pairs(self.animations) do
             if a then
-            a:flipH()
+                a:flipH()
             end
         end
     end
 
     self.current_anim = self.animations.enter
 end
-
--- function DoorGuy:update(dt)
---     self.hitbox:update()
---     self.current_anim:update(dt)
--- end
 
 function WindowGuy:anim_done(s)
     if s == "enter" then
@@ -153,3 +141,7 @@ function WindowGuy:anim_done(s)
         self.current_anim:pause()
     end
 end
+
+RunnerGuy = BaseEnemy:extend()
+
+JumperGuy = BaseEnemy:extend()
