@@ -1,4 +1,3 @@
-
 BaseEnemy = Object:extend()
 
 local DOOR_SPR = love.graphics.newImage("asset/image/door_sheet.png")
@@ -18,18 +17,18 @@ local JUMPER_GRID = anim8.newGrid(24, 40, JUMPER_SPR:getWidth(), JUMPER_SPR:getH
 -- end
 
 DOOR_SPAWN_POS = {
-    {id = "d1", available = true, position = {x = 115, y = 80}},
-    {id = "d2", available = true, position = {x = 325, y = 65}},
+    { id = "d1", available = true, position = { x = 115, y = 80 } },
+    { id = "d2", available = true, position = { x = 325, y = 65 } },
 }
 
 WINDOW_SPAWN_POS = {
-    {id = "w1", available = true, position = {x = 21, y = 25}},
-    {id = "w2", available = true, position = {x = 69, y = 25}},
-    {id = "w3", available = true, position = {x = 117, y = 25}},
+    { id = "w1", available = true, position = { x = 21, y = 25 } },
+    { id = "w2", available = true, position = { x = 69, y = 25 } },
+    { id = "w3", available = true, position = { x = 117, y = 25 } },
 
-    {id = "w4", available = true, position = {x = 276, y = 8}},
-    {id = "w5", available = true, position = {x = 325, y = 8}},
-    {id = "w6", available = true, position = {x = 276, y = 60}},
+    { id = "w4", available = true, position = { x = 276, y = 8 } },
+    { id = "w5", available = true, position = { x = 325, y = 8 } },
+    { id = "w6", available = true, position = { x = 276, y = 60 } },
 }
 
 RUNNER_SPAWN_POS = {
@@ -39,15 +38,16 @@ RUNNER_SPAWN_POS = {
 function BaseEnemy:new()
     self.location = nil
     self.is_alive = true
-    self.position = {x = 0, y = 0}
+    self.position = { x = 0, y = 0 }
     self.hitbox = {}
     self.spr_sheet = nil
-    self.moving_dir = {0, 0}
+    --self.moving_dir = { 0, 0 }
     self.speed = nil
     self.current_anim = nil
     self.shoot_cooldown = get_rnd(60 * 2, 60 * 5)
     self.tmr_shoot = Timer:new(self.shoot_cooldown, function() self:shoot() end, true)
-    self.animations = {enter = {}, die = nil, jump = nil, land = nil, run = nil}
+    self.animations = { enter = {}, die = nil, jump = nil, land = nil, run = nil }
+    self.is_hovered = false
 end
 
 function BaseEnemy:draw()
@@ -81,6 +81,7 @@ function BaseEnemy:on_hit()
 end
 
 function BaseEnemy:update(dt)
+    self.is_hovered = is_colliding(mouse.hitbox, self.hitbox) and self.is_alive
     self.tmr_shoot:update()
     self.hitbox:update()
     self.current_anim:update(dt)
@@ -92,18 +93,22 @@ function BaseEnemy:update(dt)
     end
 end
 
+function BaseEnemy:remove()
+    del(enemies, self)
+end
+
 DoorGuy = BaseEnemy:extend()
 
 function DoorGuy:new()
     DoorGuy.super.new(self)
     self.id = "door_01"
     local _spawn = get_random_item(DOOR_SPAWN_POS).position
-    self.position = {x = _spawn.x, y = _spawn.y}
+    self.position = { x = _spawn.x, y = _spawn.y }
     self.spr_sheet = DOOR_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 42, 2)
 
-    self.animations.enter = anim8.newAnimation(DOOR_GRID(('1-3'), 1), 0.2, function()self:anim_done("enter") end)
-    self.animations.die = anim8.newAnimation(DOOR_GRID(('4-6'), 1), 0.2, function()self:anim_done("die") end)
+    self.animations.enter = anim8.newAnimation(DOOR_GRID(('1-3'), 1), 0.2, function() self:anim_done("enter") end)
+    self.animations.die = anim8.newAnimation(DOOR_GRID(('4-6'), 1), 0.2, function() self:anim_done("die") end)
 
     for _, a in pairs(self.animations) do
         if a then
@@ -123,6 +128,7 @@ function DoorGuy:anim_done(s)
         print("dying done")
         self.current_anim:gotoFrame(3)
         self.current_anim:pause()
+        self:remove()
     end
 end
 
@@ -135,12 +141,12 @@ function WindowGuy:new()
     -- self.position = get_random_item(WINDOW_SPAWN_POS).position
 
     local _spawn = get_random_item(WINDOW_SPAWN_POS).position
-    self.position = {x = _spawn.x, y = _spawn.y}
+    self.position = { x = _spawn.x, y = _spawn.y }
     self.spr_sheet = WINDOW_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 24, 2)
 
-    self.animations.enter = anim8.newAnimation(WINDOW_GRID(('1-3'), 1), 0.2, function()self:anim_done("enter") end)
-    self.animations.die = anim8.newAnimation(WINDOW_GRID(('4-6'), 1), 0.2, function()self:anim_done("die") end)
+    self.animations.enter = anim8.newAnimation(WINDOW_GRID(('1-3'), 1), 0.2, function() self:anim_done("enter") end)
+    self.animations.die = anim8.newAnimation(WINDOW_GRID(('4-6'), 1), 0.2, function() self:anim_done("die") end)
 
     if math.random(0, 1) == 0 then
         for _, a in pairs(self.animations) do
@@ -162,6 +168,7 @@ function WindowGuy:anim_done(s)
         print("dying done")
         self.current_anim:gotoFrame(3)
         self.current_anim:pause()
+        self:remove()
     end
 end
 
@@ -173,12 +180,12 @@ function RunnerGuy:new()
     self.name = "runner"
     self.speed = -25
     --TODO: Make positions random-ish
-    self.position = {x = 150, y = 100}
+    self.position = { x = 150, y = 100 }
     self.spr_sheet = RUNNER_SPR
     self.hitbox = Hitbox(self, 0, 0, 16, 38, 16, 3)
 
-    self.animations.enter = anim8.newAnimation(RUNNER_GRID(('1-2'), 1), 0.2, function()self:anim_done("enter") end)
-    self.animations.die = anim8.newAnimation(RUNNER_GRID(('3-4'), 1), 0.2, function()self:anim_done("die") end)
+    self.animations.enter = anim8.newAnimation(RUNNER_GRID(('1-2'), 1), 0.2, function() self:anim_done("enter") end)
+    self.animations.die = anim8.newAnimation(RUNNER_GRID(('3-4'), 1), 0.2, function() self:anim_done("die") end)
 
     if math.random(0, 1) == 0 then
         self.speed = self.speed * -1
@@ -200,6 +207,7 @@ function RunnerGuy:anim_done(s)
         self.speed = 0
         self.current_anim:gotoFrame(3)
         self.current_anim:pause()
+        self:remove()
     end
 end
 
@@ -213,15 +221,15 @@ function JumperGuy:new()
 
     --TODO: Make a better function that all enemey types can use (DRY)
     local _spawn = get_random_item(WINDOW_SPAWN_POS).position
-    self.position = {x = _spawn.x, y = _spawn.y}
+    self.position = { x = _spawn.x, y = _spawn.y }
     self.starting_y = self.position.y
     self.peak_y = self.starting_y - 10
     self.landing_y = 110
     self.spr_sheet = JUMPER_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 32, 4, 3)
 
-    self.animations.enter = anim8.newAnimation(JUMPER_GRID(('1-3'), 1), 1, function()self:anim_done("enter") end)
-    self.animations.die = anim8.newAnimation(JUMPER_GRID(('4-6'), 1), 0.2, function()self:anim_done("die") end)
+    self.animations.enter = anim8.newAnimation(JUMPER_GRID(('1-3'), 1), 1, function() self:anim_done("enter") end)
+    self.animations.die = anim8.newAnimation(JUMPER_GRID(('4-6'), 1), 0.2, function() self:anim_done("die") end)
 
     if math.random(0, 1) == 0 then
         self.speed = self.speed * -1
@@ -237,11 +245,14 @@ function JumperGuy:new()
     self.current_anim:pause()
     self.current_anim:gotoFrame(2)
 
-    flux.to(self.position, 0.1, {y = self.peak_y}):oncomplete(
-        function() self.current_anim:gotoFrame(3)
-        end):after(self.position, 0.4, {y = self.landing_y}):oncomplete(
-    function() self.current_anim:gotoFrame(1) self.tmr_shoot:start() end)
-
+    flux.to(self.position, 0.1, { y = self.peak_y }):oncomplete(
+        function()
+            self.current_anim:gotoFrame(3)
+        end):after(self.position, 0.4, { y = self.landing_y }):oncomplete(
+        function()
+            self.current_anim:gotoFrame(1)
+            self.tmr_shoot:start()
+        end)
 end
 
 function JumperGuy:anim_done(s)
@@ -252,5 +263,6 @@ function JumperGuy:anim_done(s)
         self.speed = 0
         self.current_anim:gotoFrame(3)
         self.current_anim:pause()
+        self:remove()
     end
 end

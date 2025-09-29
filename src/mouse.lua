@@ -7,18 +7,12 @@ local reticle_frames = {
 
 function Mouse:new()
     self.position = { x = 0, y = 0 }
-    --self.x = x
-    --self.y = y
-    --self.w = w
-    --self.h = h
     self.hitbox = Hitbox(self, 0, 0, 10, 10, 12, 4)
 end
 
 function Mouse:update(x, y)
-    -- local mx2 = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
-    -- local my2 = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
     self.position.x = x - 16
-    self.position.y = y - 6 --love.mouse.getPosition()
+    self.position.y = y - 6
     self.hitbox:update()
 end
 

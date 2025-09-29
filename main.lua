@@ -6,7 +6,7 @@ logger = require("lib.log")
 lume = require("lib.lume")
 flux = require("lib.flux")
 anim8 = require("lib.anim8")
-batteries = require("lib.batteries")
+--batteries = require("lib.batteries")
 Signal = require("lib.signal")
 
 logger.info("Starting game")
@@ -59,7 +59,7 @@ local wall = love.graphics.newImage("asset/image/wall.png")
 
 shake_duration = 0
 shake_wait = 0
-shake_offset = {x = 0, y = 0}
+shake_offset = { x = 0, y = 0 }
 
 require("src.clock")
 require("src.enemy")
@@ -71,8 +71,10 @@ require("src.hud")
 require("src.blood_fx")
 require("src.player_hit_fx")
 
-local screen_rect = {x = 0, y = 0, w = 384, h = 216}
+local screen_rect = { x = 0, y = 0, w = 384, h = 216 }
 player = {
+    score = 100,
+    multipler = 1,
     ammo = 6,
     max_ammo = 6,
     health = 6,
@@ -114,6 +116,7 @@ table.insert(enemies, jumperGuy)
 tmr_ammo:start()
 
 function love.load()
+    love.mouse.setVisible(false)
     set_bgcolor_from_hex(COLORS.CF_BLUE)
     change_gamestate(GAME_STATES.game)
     high_score = load_high_score()
@@ -126,19 +129,19 @@ function love.load()
         logger.info("logger in INFO mode")
     end
 
-    font = love.graphics.newFont("asset/font/mago2.ttf", 32)
-    font_hud = love.graphics.newFont("asset/font/mago2.ttf", 64)
+    font = love.graphics.newFont("asset/font/quizshow.ttf", 32)
+    --font_hud = love.graphics.newFont("asset/font/mago2.ttf", 64)
 
     background_img = love.graphics.newImage("asset/image/streetCleanersLayout.png")
 
     font:setFilter("nearest")
-    font_hud:setFilter("nearest")
+    --font_hud:setFilter("nearest")
     love.graphics.setFont(font)
 
     -- if your code was optimized for fullHD:
-    window = {translateX = 0, translateY = 0, scale = 3, width = 384, height = 216}
+    window = { translateX = 0, translateY = 0, scale = 3, width = 384, height = 216 }
     width, height = love.graphics.getDimensions()
-    love.window.setMode(width, height, {resizable = true, borderless = false})
+    love.window.setMode(width, height, { resizable = true, borderless = false })
     resize(width, height) -- update new translation and scale
 end
 
@@ -161,31 +164,22 @@ function love.update(dt)
         show_hurt = show_hurt - 1
     end
 
-    --doorGuy:update()
-
     for _, a in pairs(enemies) do
-        --if a then
         a:update(dt)
-        --end
     end
 
     for _, b in pairs(blood_container) do
-        --if a then
         b:update(dt)
-        --end
     end
 
     for _, bh in pairs(bhit_container) do
-        --if a then
         bh:update(dt)
-        --end
     end
 
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
     my = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
 
     all_clocks:update()
-    --game_clock:update()
 
     if game_state == GAME_STATES.game then
         if shake_duration > 0 then
@@ -210,11 +204,12 @@ function love.update(dt)
     -- end
 
     if game_state == GAME_STATES.day_title then
-        update_day_title()
     end
 
-    --print((collectgarbage('count') / 1024))
+    print((collectgarbage('count') / 1024))
     mouse:update(mx, my)
+
+    --print(#enemies)
 end
 
 function love.mousepressed(x, y, button, _)
@@ -233,10 +228,19 @@ function shoot()
         show_flash = 2
         --shake_duration=0.1
 
+        local overlaps = {}
+
         for _, e in pairs(enemies) do
+            if e.is_hovered then
+                table.insert(overlaps, e)
+            end
+            --e:check_if_hovered()
+        end
 
-            e:check_if_hovered()
+        if #overlaps > 0 then
+            table.sort(overlaps, get_closer_enemy)
 
+            overlaps[1]:on_hit()
         end
     else
         --TODO: Play empty sound
@@ -245,12 +249,11 @@ function shoot()
     -- body
 end
 
-function love.keypressed(key, scancode, isrepeat)
-    if key == "tab" then
-        local state = not love.mouse.isVisible() -- the opposite of whatever it currently is
-        love.mouse.setVisible(state)
-    end
+function get_closer_enemy(a, b)
+    return a.position.y > b.position.y
+end
 
+function love.keypressed(key, scancode, isrepeat)
     if not isrepeat then
         if key == "escape" then
             quit_game()
@@ -278,17 +281,6 @@ function love.keypressed(key, scancode, isrepeat)
 
         end
     end
-end
-
-function setup_residents()
-    for _ = 1, customer_count do
-        table.insert(residents, true)
-    end
-    for _ = 1, noncustomer_count do
-        table.insert(residents, false)
-    end
-    residents = batteries.tablex.shuffle(residents)
-    batteries.tablex.push(residents, {}) --HACK: Hacky way to handle spawning all mailboxes.
 end
 
 function change_gamestate(state)
@@ -343,11 +335,6 @@ function love.draw()
     if show_hurt > 0 then
         love.graphics.draw(hurt_img, 0, 0)
     end
-
-    love.graphics.push("all")
-    set_color_from_hex(COLORS.BLACK)
-    love.graphics.rectangle("fill", 0, 180, 384, 40)
-    love.graphics.pop()
 
     hud:draw()
 
@@ -424,13 +411,13 @@ end
 
 function is_on_screen(obj)
     if ((obj.x >= screen_rect.x + screen_rect.w) or
-        (obj.x + obj.w <= screen_rect.x) or
-        (obj.y >= screen_rect.y + screen_rect.h) or
-    (obj.y + obj.h <= screen_rect.y)) then
-    return false
-else
-    return true
-end
+            (obj.x + obj.w <= screen_rect.x) or
+            (obj.y >= screen_rect.y + screen_rect.h) or
+            (obj.y + obj.h <= screen_rect.y)) then
+        return false
+    else
+        return true
+    end
 end
 
 function start_game()
@@ -443,7 +430,7 @@ function start_game()
     spawner:reset()
     shake_duration = 0
     shake_wait = 0
-    shake_offset = {x = 0, y = 0}
+    shake_offset = { x = 0, y = 0 }
 end
 
 function reset_game()
