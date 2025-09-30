@@ -206,18 +206,22 @@ function love.update(dt)
     if game_state == GAME_STATES.day_title then
     end
 
-    print((collectgarbage('count') / 1024))
+    
     mouse:update(mx, my)
 
     --print(#enemies)
+    -- print((collectgarbage('count') / 1024))
 end
 
 function love.mousepressed(x, y, button, _)
+    print(button)
+    if button == 1 then
+       shoot()
+    end
     --mx = math.floor((x - window.translateX) / window.scale + 0.5)
     --my = math.floor((y - window.translateY) / window.scale + 0.5)
 
-    shoot()
-
+    
     --print("click on " .. mx .. " " .. my)
 end
 
