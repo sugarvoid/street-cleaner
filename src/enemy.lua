@@ -16,6 +16,22 @@ local JUMPER_GRID = anim8.newGrid(24, 40, JUMPER_SPR:getWidth(), JUMPER_SPR:getH
 --     print(s .. " animation is done")
 -- end
 
+
+SPAWN_DATA = {
+    { index = 1, id = "d1", available = true, position = { x = 115, y = 80 } },
+    { index = 2, id = "d2", available = true, position = { x = 325, y = 65 } },
+
+    { index = 3, id = "w1", available = true, position = { x = 21, y = 25 } },
+    { index = 4, id = "w2", available = true, position = { x = 69, y = 25 } },
+    { index = 5, id = "w3", available = true, position = { x = 117, y = 25 } },
+    { index = 6, id = "w4", available = true, position = { x = 276, y = 8 } },
+    { index = 7, id = "w5", available = true, position = { x = 325, y = 8 } },
+    { index = 8, id = "w6", available = true, position = { x = 276, y = 60 } },
+
+}
+
+
+
 DOOR_SPAWN_POS = {
     { id = "d1", available = true, position = { x = 115, y = 80 } },
     { id = "d2", available = true, position = { x = 325, y = 65 } },
@@ -48,6 +64,7 @@ function BaseEnemy:new()
     self.tmr_shoot = Timer:new(self.shoot_cooldown, function() self:shoot() end, true)
     self.animations = { enter = {}, die = nil, jump = nil, land = nil, run = nil }
     self.is_hovered = false
+    self.location_index = nil
 end
 
 function BaseEnemy:draw()
@@ -94,16 +111,26 @@ function BaseEnemy:update(dt)
 end
 
 function BaseEnemy:remove()
+    if self.location_index then
+        SPAWN_DATA[self.location_index].available = true
+    end
     del(enemies, self)
 end
 
 DoorGuy = BaseEnemy:extend()
 
-function DoorGuy:new()
+function DoorGuy:new(idx)
     DoorGuy.super.new(self)
     self.id = "door_01"
+
     local _spawn = get_random_item(DOOR_SPAWN_POS).position
-    self.position = { x = _spawn.x, y = _spawn.y }
+    --self.position = { x = _spawn.x, y = _spawn.y }
+
+    local s_data = SPAWN_DATA[idx]
+    self.location_index = idx
+    self.position = { x = s_data.position.x, y = s_data.position.y }
+
+
     self.spr_sheet = DOOR_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 42, 2)
 
@@ -134,14 +161,18 @@ end
 
 WindowGuy = BaseEnemy:extend()
 
-function WindowGuy:new()
+function WindowGuy:new(idx)
     WindowGuy.super.new(self)
     self.id = "door_01"
 
     -- self.position = get_random_item(WINDOW_SPAWN_POS).position
 
+    local s_data = SPAWN_DATA[idx]
+
+    self.location_index = idx
     local _spawn = get_random_item(WINDOW_SPAWN_POS).position
-    self.position = { x = _spawn.x, y = _spawn.y }
+    --self.position = { x = _spawn.x, y = _spawn.y }
+    self.position = { x = s_data.position.x, y = s_data.position.y }
     self.spr_sheet = WINDOW_SPR
     self.hitbox = Hitbox(self, 0, 0, 20, 24, 2)
 

@@ -57,9 +57,11 @@ local flash_img = love.graphics.newImage("asset/image/flash.png")
 local hurt_img = love.graphics.newImage("asset/image/player_hit.png")
 local wall = love.graphics.newImage("asset/image/wall.png")
 
-shake_duration = 0
-shake_wait = 0
-shake_offset = { x = 0, y = 0 }
+-- shake_duration = 0
+-- shake_wait = 0
+-- shake_offset = { x = 0, y = 0 }
+
+enemies = {}
 
 require("src.clock")
 require("src.enemy")
@@ -70,25 +72,14 @@ require("lib.timer")
 require("src.hud")
 require("src.blood_fx")
 require("src.player_hit_fx")
+require("src.spawner")
+require("src.player")
 
 local screen_rect = { x = 0, y = 0, w = 384, h = 216 }
-player = {
-    score = 100,
-    multipler = 1,
-    ammo = 6,
-    max_ammo = 6,
-    health = 6,
-    max_health = 6,
-    take_damage = function(self)
-        print("taking damage")
-        self.health = math.clamp(0, self.health - 1, self.max_health)
-        show_hurt = 0
-        show_hurt = 2
-        PlayerHit(bhit_container)
-    end
-}
+
 
 mouse = Mouse()
+spawner = Spawner()
 
 tmr_ammo = Timer:new(60 * 2, function() add_ammo(1) end, true)
 
@@ -99,19 +90,28 @@ mx, my = 0, 0
 all_clocks:add(tmr_ammo)
 --all_clocks:add(results_clock)
 
-local doorGuy = DoorGuy()
-local windowGuy = WindowGuy()
-local runnerGuy = RunnerGuy()
-local jumperGuy = JumperGuy()
 
-enemies = {}
+
+spawner:add_guy("door")
+spawner:add_guy("window")
+spawner:add_guy("runner")
+spawner:add_guy("jumper")
+
+
+
+-- local doorGuy = DoorGuy()
+-- local windowGuy = WindowGuy()
+-- local runnerGuy = RunnerGuy()
+-- local jumperGuy = JumperGuy()
+
+
 blood_container = {}
 bhit_container = {}
 
-table.insert(enemies, doorGuy)
-table.insert(enemies, windowGuy)
-table.insert(enemies, runnerGuy)
-table.insert(enemies, jumperGuy)
+-- table.insert(enemies, doorGuy)
+-- table.insert(enemies, windowGuy)
+-- table.insert(enemies, runnerGuy)
+-- table.insert(enemies, jumperGuy)
 
 tmr_ammo:start()
 
@@ -182,16 +182,16 @@ function love.update(dt)
     all_clocks:update()
 
     if game_state == GAME_STATES.game then
-        if shake_duration > 0 then
-            shake_duration = shake_duration - dt
-            if shake_wait > 0 then
-                shake_wait = shake_wait - dt
-            else
-                shake_offset.x = love.math.random(-1, 1)
-                shake_offset.y = love.math.random(-1, 1)
-                shake_wait = 0.01
-            end
-        end
+        -- if shake_duration > 0 then
+        --     shake_duration = shake_duration - dt
+        --     if shake_wait > 0 then
+        --         shake_wait = shake_wait - dt
+        --     else
+        --         shake_offset.x = love.math.random(-1, 1)
+        --         shake_offset.y = love.math.random(-1, 1)
+        --         shake_wait = 0.01
+        --     end
+        -- end
         update_game(dt)
     end
 
@@ -206,7 +206,7 @@ function love.update(dt)
     if game_state == GAME_STATES.day_title then
     end
 
-    
+
     mouse:update(mx, my)
 
     --print(#enemies)
@@ -216,12 +216,12 @@ end
 function love.mousepressed(x, y, button, _)
     print(button)
     if button == 1 then
-       shoot()
+        shoot()
     end
     --mx = math.floor((x - window.translateX) / window.scale + 0.5)
     --my = math.floor((y - window.translateY) / window.scale + 0.5)
 
-    
+
     --print("click on " .. mx .. " " .. my)
 end
 
@@ -267,6 +267,10 @@ function love.keypressed(key, scancode, isrepeat)
             love.event.push("quit", "restart")
         end
 
+        if key == "s" then
+            spawner:add_guy("window")
+        end
+
         if game_state == GAME_STATES.title then
         elseif game_state == GAME_STATES.game then
             if key == "space" then
@@ -296,9 +300,7 @@ end
 function love.draw()
     -- first translate, then scale
     love.graphics.translate(window.translateX, window.translateY)
-    if shake_duration > 0 then
-        love.graphics.translate(shake_offset.x, shake_offset.y)
-    end
+
     love.graphics.scale(window.scale)
     -- your graphics code here, optimized for fullHD
 
