@@ -2,8 +2,8 @@
 
 # Check for both arguments: folder name and .love file
 if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "❌ Error: Missing arguments."
-  echo "👉 Usage: $0 <folder_name> <path_to_game.love>"
+  echo "Error: Missing arguments."
+  echo "Usage: $0 <folder_name> <path_to_game.love>"
   exit 1
 fi
 
@@ -28,13 +28,13 @@ FILES_TO_COPY=(
 
 # Check if .love file exists
 if [ ! -f "$LOVE_FILE" ]; then
-  echo "❌ Error: .love file '$LOVE_FILE' does not exist."
+  echo "Error: .love file '$LOVE_FILE' does not exist."
   exit 1
 fi
 
 # Check if love.exe exists
 if [ ! -f "$LOVE_EXE" ]; then
-  echo "❌ Error: love.exe not found in $LOVE_DIR"
+  echo "Error: love.exe not found in $LOVE_DIR"
   exit 1
 fi
 
@@ -46,7 +46,7 @@ mkdir -p "$DEST_DIR"
 
 # Build the .exe
 cat "$LOVE_EXE" "$LOVE_FILE" > "$DEST_DIR/$GAME_NAME.exe"
-echo "✅ Built $DEST_DIR/$GAME_NAME.exe"
+echo "Built $DEST_DIR/$GAME_NAME.exe"
 
 
 
@@ -55,10 +55,10 @@ for file in "${FILES_TO_COPY[@]}"; do
   src="$LOVE_DIR/$file"
   if [ -f "$src" ]; then
     cp "$src" "$DEST_DIR"
-    echo "📦 Copied $file"
+    echo "Copied $file"
   else
-    echo "⚠️ Warning: $file not found in $LOVE_DIR"
+    echo "⚠Warning: $file not found in $LOVE_DIR"
   fi
 done
 
-echo "🎉 Build complete in: $DEST_DIR"
+echo "Build complete in: $DEST_DIR"

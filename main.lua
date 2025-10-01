@@ -64,6 +64,9 @@ local wall = love.graphics.newImage("asset/image/wall.png")
 enemies = {}
 
 require("src.clock")
+require("src.alert_icon")
+require("src.score_fx")
+require("src.muzzle_flash")
 require("src.enemy")
 require("src.hitbox")
 require("src.functions")
@@ -119,7 +122,7 @@ function love.load()
     love.mouse.setVisible(false)
     set_bgcolor_from_hex(COLORS.CF_BLUE)
     change_gamestate(GAME_STATES.game)
-  --  high_score = load_high_score()
+    --  high_score = load_high_score()
     if is_debug_on then
         logger.level = logger.Level.DEBUG
         logger.debug("Entering debug mode")
@@ -211,7 +214,7 @@ function love.update(dt)
 
     --print(#enemies)
     -- print((collectgarbage('count') / 1024))
-   -- print('Memory used: ' .. string.format("%.2f", collectgarbage('count')/1000) .. " MB")
+    -- print('Memory used: ' .. string.format("%.2f", collectgarbage('count')/1000) .. " MB")
 end
 
 function love.mousepressed(x, y, button, _)
@@ -269,7 +272,7 @@ function love.keypressed(key, scancode, isrepeat)
         end
 
         if key == "s" then
-            local s = get_random_item({"jumper", "window", "door", "runner"})
+            local s = get_random_item({ "jumper", "window", "door", "runner" })
             spawner:add_guy(s)
         end
 
@@ -352,7 +355,6 @@ function love.draw()
     end
 
     --print("Current FPS: "..tostring(love.timer.getFPS( )))
-    
 end
 
 function resize(w, h)

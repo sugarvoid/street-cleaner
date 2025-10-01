@@ -10,6 +10,7 @@
     - Make body flash away a disappear 
     - Add shoot fx
     - Add alert fx
+    - Figure out muzzle position
 
 - Code jumper
 - Code runner

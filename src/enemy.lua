@@ -65,11 +65,16 @@ function BaseEnemy:new()
     self.animations = { enter = {}, die = nil, jump = nil, land = nil, run = nil }
     self.is_hovered = false
     self.location_index = nil
+    self.muzzle_position = { x = 0, y = 0 }
+    self.alert_icon = AlertFx(self)
+    self.muzzle_flash = MuzzleFx(self)
 end
 
 function BaseEnemy:draw()
     self.current_anim:draw(self.spr_sheet, self.position.x, self.position.y)
     self.hitbox:draw()
+    self.alert_icon:draw()
+    self.muzzle_flash:draw()
 end
 
 function BaseEnemy:check_if_hovered()
@@ -82,6 +87,7 @@ end
 function BaseEnemy:shoot()
     if self.is_alive then
         print("shooting")
+        self.muzzle_flash:show()
         self.tmr_shoot:stop()
         player:take_damage()
         self.shoot_cooldown = get_rnd(60 * 3, 60 * 5)
@@ -101,6 +107,8 @@ function BaseEnemy:update(dt)
     self.is_hovered = is_colliding(mouse.hitbox, self.hitbox) and self.is_alive
     self.tmr_shoot:update()
     self.hitbox:update()
+    self.alert_icon:update(dt)
+    self.muzzle_flash:update(dt)
     self.current_anim:update(dt)
     if self.name == "runner" then
         self.position.x = self.position.x + self.speed * dt
@@ -143,6 +151,9 @@ function DoorGuy:new(idx)
             a:flipH()
         end
     end
+
+    self.alert_icon = AlertFx(self, self.position.x, self.position.y)
+    self.muzzle_flash = MuzzleFx(self.position.x, self.position.y)
 
     self.current_anim = self.animations.enter
 end
@@ -188,6 +199,9 @@ function WindowGuy:new(idx)
         end
     end
 
+    self.alert_icon = AlertFx(self, self.position.x, self.position.y)
+    self.muzzle_flash = MuzzleFx(self.position.x, self.position.y)
+
     self.current_anim = self.animations.enter
 end
 
@@ -228,8 +242,10 @@ function RunnerGuy:new()
             end
         end
     else
-         self.position = { x = 386, y = get_rnd(100, 120) }
+        self.position = { x = 386, y = get_rnd(100, 120) }
     end
+    self.alert_icon = AlertFx(self, self.position.x, self.position.y)
+    self.muzzle_flash = MuzzleFx(self.position.x, self.position.y)
     self.tmr_shoot.finished_time = self.tmr_shoot.finished_time + 2
     self.tmr_shoot:start()
     self.current_anim = self.animations.enter
@@ -286,6 +302,9 @@ function JumperGuy:new(idx)
             end
         end
     end
+
+    self.alert_icon = AlertFx(self, self.position.x, self.position.y)
+    self.muzzle_flash = MuzzleFx(self.position.x, self.position.y)
 
     self.current_anim = self.animations.enter
 
