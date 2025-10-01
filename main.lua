@@ -1,13 +1,13 @@
-is_debug_on = false
+is_debug_on = true
 
 love = require("love")
 Object = require "lib.classic"
 logger = require("lib.log")
-lume = require("lib.lume")
+--lume = require("lib.lume")
 flux = require("lib.flux")
 anim8 = require("lib.anim8")
 --batteries = require("lib.batteries")
-Signal = require("lib.signal")
+--Signal = require("lib.signal")
 
 logger.info("Starting game")
 
@@ -94,7 +94,7 @@ all_clocks:add(tmr_ammo)
 
 spawner:add_guy("door")
 spawner:add_guy("window")
-spawner:add_guy("runner")
+--spawner:add_guy("runner")
 spawner:add_guy("jumper")
 
 
@@ -211,6 +211,7 @@ function love.update(dt)
 
     --print(#enemies)
     -- print((collectgarbage('count') / 1024))
+   -- print('Memory used: ' .. string.format("%.2f", collectgarbage('count')/1000) .. " MB")
 end
 
 function love.mousepressed(x, y, button, _)
@@ -268,7 +269,7 @@ function love.keypressed(key, scancode, isrepeat)
         end
 
         if key == "s" then
-            spawner:add_guy("window")
+            spawner:add_guy("jumper")
         end
 
         if game_state == GAME_STATES.title then
@@ -350,7 +351,7 @@ function love.draw()
     end
 
     --print("Current FPS: "..tostring(love.timer.getFPS( )))
-    --print('Memory used: ' .. string.format("%.2f", collectgarbage('count')/1000) .. " MB")
+    
 end
 
 function resize(w, h)

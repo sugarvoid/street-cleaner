@@ -12,17 +12,26 @@ function Spawner:add_guy(e_type)
     local guy = nil
     if e_type == "door" then
         local idx = get_spawn_index("d")
-        guy = DoorGuy(idx)
+        if idx ~= -2 then
+            guy = DoorGuy(idx)
+        end
     elseif e_type == "window" then
         local idx = get_spawn_index("w")
-        guy = WindowGuy(idx)
+        if idx ~= -2 then
+            guy = WindowGuy(idx)
+        end
     elseif e_type == "runner" then
         guy = RunnerGuy()
     elseif e_type == "jumper" then
-        guy = JumperGuy()
+        local idx = get_spawn_index("w")
+        if idx ~= -2 then
+            guy = JumperGuy(idx)
+        end
     end
-
-    table.insert(enemies, guy)
+    if guy ~= nil then
+        table.insert(enemies, guy)
+    end
+    
 end
 
 function update_lane(lane, occupied)
@@ -30,14 +39,12 @@ function update_lane(lane, occupied)
 end
 
 function get_spawn_index(e_letter)
-    --local letter = "w"
     local s_data = {}
-    local tries = 10
+    local tries = 25
 
     repeat
         tries = tries - 1
         if tries <= 0 then
-            --TODO: Fins better way to prevent infitnate loop
             return -2
         end
         s_data = get_random_item(SPAWN_DATA)

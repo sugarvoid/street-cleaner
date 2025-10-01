@@ -115,6 +115,7 @@ function BaseEnemy:remove()
         SPAWN_DATA[self.location_index].available = true
     end
     del(enemies, self)
+    player.score = player.score + 100
 end
 
 DoorGuy = BaseEnemy:extend()
@@ -244,15 +245,26 @@ end
 
 JumperGuy = BaseEnemy:extend()
 
-function JumperGuy:new()
+function JumperGuy:new(idx)
     JumperGuy.super.new(self)
     self.id = "door_01"
     self.name = "jumper"
     self.speed = -25
 
+
+    local s_data = SPAWN_DATA[idx]
+
+    self.location_index = idx
+    --local _spawn = get_random_item(WINDOW_SPAWN_POS).position
+    --self.position = { x = _spawn.x, y = _spawn.y }
+    self.position = { x = s_data.position.x, y = s_data.position.y }
+
+
+
+
     --TODO: Make a better function that all enemey types can use (DRY)
-    local _spawn = get_random_item(WINDOW_SPAWN_POS).position
-    self.position = { x = _spawn.x, y = _spawn.y }
+    --local _spawn = get_random_item(WINDOW_SPAWN_POS).position
+    --self.position = { x = _spawn.x, y = _spawn.y }
     self.starting_y = self.position.y
     self.peak_y = self.starting_y - 10
     self.landing_y = 110
