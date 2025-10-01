@@ -119,7 +119,7 @@ function love.load()
     love.mouse.setVisible(false)
     set_bgcolor_from_hex(COLORS.CF_BLUE)
     change_gamestate(GAME_STATES.game)
-    high_score = load_high_score()
+  --  high_score = load_high_score()
     if is_debug_on then
         logger.level = logger.Level.DEBUG
         logger.debug("Entering debug mode")
@@ -269,7 +269,8 @@ function love.keypressed(key, scancode, isrepeat)
         end
 
         if key == "s" then
-            spawner:add_guy("jumper")
+            local s = get_random_item({"jumper", "window", "door", "runner"})
+            spawner:add_guy(s)
         end
 
         if game_state == GAME_STATES.title then

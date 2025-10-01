@@ -210,7 +210,7 @@ function RunnerGuy:new()
     RunnerGuy.super.new(self)
     self.id = "door_01"
     self.name = "runner"
-    self.speed = -25
+    self.speed = -30
     --TODO: Make positions random-ish
     self.position = { x = 150, y = 100 }
     self.spr_sheet = RUNNER_SPR
@@ -221,13 +221,17 @@ function RunnerGuy:new()
 
     if math.random(0, 1) == 0 then
         self.speed = self.speed * -1
+        self.position = { x = -10, y = get_rnd(100, 120) }
         for _, a in pairs(self.animations) do
             if a then
                 a:flipH()
             end
         end
+    else
+         self.position = { x = 386, y = get_rnd(100, 120) }
     end
-
+    self.tmr_shoot.finished_time = self.tmr_shoot.finished_time + 2
+    self.tmr_shoot:start()
     self.current_anim = self.animations.enter
 end
 
