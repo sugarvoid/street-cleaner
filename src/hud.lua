@@ -1,5 +1,5 @@
 local ammo_container = love.graphics.newImage("asset/image/ammo_container.png")
-local ac_position = { x = 168, y = 181 }
+local ac_position = {x = 168, y = 181}
 local ammo_icon = love.graphics.newImage("asset/image/bullet.png")
 local health_icon = love.graphics.newImage("asset/image/health_unit.png")
 local black_bar = love.graphics.newImage("asset/image/hud_bar.png")
@@ -23,7 +23,7 @@ hud = {
         for i = 1, player.ammo do
             love.graphics.draw(ammo_icon, AMMO_STARTING_X + (8 * (i - 1)), AMMO_Y)
         end
-        for i = 1, player.health do
+        for i = 1, player.health.current do
             love.graphics.draw(health_icon, 75 + (7 * (i - 1)), 189)
         end
         love.graphics.print(player.score, 300, 190, 0, 0.2, 0.2)

@@ -6,7 +6,7 @@ local reticle_frames = {
 }
 
 function Mouse:new()
-    self.position = { x = 0, y = 0 }
+    self.position = Position()
     self.hitbox = Hitbox(self, 0, 0, 10, 10, 12, 4)
 end
 
@@ -17,6 +17,6 @@ function Mouse:update(x, y)
 end
 
 function Mouse:draw()
-    self.hitbox:draw()
+    --self.hitbox:draw()
     love.graphics.draw(RETICLE_SHEET, reticle_frames[1], self.position.x, self.position.y)
 end

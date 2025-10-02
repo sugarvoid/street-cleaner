@@ -1,13 +1,10 @@
-is_debug_on = true
+is_debug_on = false
 
-love = require("love")
+--love = require("love")
 Object = require "lib.classic"
 logger = require("lib.log")
---lume = require("lib.lume")
 flux = require("lib.flux")
 anim8 = require("lib.anim8")
---batteries = require("lib.batteries")
---Signal = require("lib.signal")
 
 logger.info("Starting game")
 
@@ -26,20 +23,23 @@ local GAME_STATES = {
     gameover = 4,
 }
 local game_state = nil
-
 local intro_time = 0
 local high_score = 0
 local level_length = 20
-
 local show_flash = 0
-local show_hurt = 0
+show_hurt = 0
 
 all_clocks = {
     __clocks = {},
     update = function(self)
-        for c in table.for_each(self.__clocks) do
+        -- for c in table.for_each(self.__clocks) do
+        --     c:update()
+        -- end
+
+        for _, c in ipairs(self.__clocks) do
             c:update()
         end
+
     end,
     add = function(self, c)
         table.insert(self.__clocks, c)
@@ -57,11 +57,9 @@ local flash_img = love.graphics.newImage("asset/image/flash.png")
 local hurt_img = love.graphics.newImage("asset/image/player_hit.png")
 local wall = love.graphics.newImage("asset/image/wall.png")
 
--- shake_duration = 0
--- shake_wait = 0
--- shake_offset = { x = 0, y = 0 }
-
 enemies = {}
+blood_container = {}
+bhit_container = {}
 
 require("src.clock")
 require("src.alert_icon")
@@ -78,45 +76,23 @@ require("src.player_hit_fx")
 require("src.spawner")
 require("src.player")
 
-local screen_rect = { x = 0, y = 0, w = 384, h = 216 }
-
+local screen_rect = {x = 0, y = 0, w = 384, h = 216}
 
 mouse = Mouse()
 spawner = Spawner()
 
 tmr_ammo = Timer:new(60 * 2, function() add_ammo(1) end, true)
+tmr_spawn = Timer:new(60 * 2, function() spawner:spawn_guy() end, true)
+all_clocks:add(tmr_ammo)
+all_clocks:add(tmr_spawn)
 
 game_clock = Clock()
-results_clock = Clock()
-mx, my = 0, 0
 
-all_clocks:add(tmr_ammo)
---all_clocks:add(results_clock)
-
-
-
-spawner:add_guy("door")
-spawner:add_guy("window")
---spawner:add_guy("runner")
-spawner:add_guy("jumper")
-
-
-
--- local doorGuy = DoorGuy()
--- local windowGuy = WindowGuy()
--- local runnerGuy = RunnerGuy()
--- local jumperGuy = JumperGuy()
-
-
-blood_container = {}
-bhit_container = {}
-
--- table.insert(enemies, doorGuy)
--- table.insert(enemies, windowGuy)
--- table.insert(enemies, runnerGuy)
--- table.insert(enemies, jumperGuy)
+mx = 0
+my = 0
 
 tmr_ammo:start()
+tmr_spawn:start()
 
 function love.load()
     love.mouse.setVisible(false)
@@ -142,9 +118,9 @@ function love.load()
     love.graphics.setFont(font)
 
     -- if your code was optimized for fullHD:
-    window = { translateX = 0, translateY = 0, scale = 3, width = 384, height = 216 }
+    window = {translateX = 0, translateY = 0, scale = 3, width = 384, height = 216}
     width, height = love.graphics.getDimensions()
-    love.window.setMode(width, height, { resizable = true, borderless = false })
+    love.window.setMode(width, height, {resizable = true, borderless = false})
     resize(width, height) -- update new translation and scale
 end
 
@@ -157,8 +133,6 @@ function love.quit()
 end
 
 function love.update(dt)
-    dt = math.min(dt, 1 / 60)
-
     if show_flash > 0 then
         show_flash = show_flash - 1
     end
@@ -167,16 +141,22 @@ function love.update(dt)
         show_hurt = show_hurt - 1
     end
 
-    for _, a in pairs(enemies) do
-        a:update(dt)
-    end
+    -- for _, a in pairs(enemies) do
+    --     a:update(dt)
+    -- end
 
-    for _, b in pairs(blood_container) do
-        b:update(dt)
-    end
+    -- for _, b in pairs(blood_container) do
+    --     b:update(dt)
+    -- end
 
-    for _, bh in pairs(bhit_container) do
-        bh:update(dt)
+    -- for _, bh in pairs(bhit_container) do
+    --     bh:update(dt)
+    -- end
+
+    for _, container in ipairs({enemies, blood_container, bhit_container}) do
+        for _, obj in ipairs(container) do
+            obj:update(dt)
+        end
     end
 
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
@@ -185,16 +165,6 @@ function love.update(dt)
     all_clocks:update()
 
     if game_state == GAME_STATES.game then
-        -- if shake_duration > 0 then
-        --     shake_duration = shake_duration - dt
-        --     if shake_wait > 0 then
-        --         shake_wait = shake_wait - dt
-        --     else
-        --         shake_offset.x = love.math.random(-1, 1)
-        --         shake_offset.y = love.math.random(-1, 1)
-        --         shake_wait = 0.01
-        --     end
-        -- end
         update_game(dt)
     end
 
@@ -202,29 +172,22 @@ function love.update(dt)
         update_pause()
     end
 
-    -- if gamestate == GAMESTATES.day_intro then
-    --     update_day_intro()
-    -- end
-
-    if game_state == GAME_STATES.day_title then
-    end
-
-
     mouse:update(mx, my)
 
     --print(#enemies)
     -- print((collectgarbage('count') / 1024))
-    -- print('Memory used: ' .. string.format("%.2f", collectgarbage('count')/1000) .. " MB")
+    --print('Memory used: ' .. string.format("%.2f", collectgarbage('count') / 1000) .. " MB")
 end
 
 function love.mousepressed(x, y, button, _)
-    print(button)
+    --print(button)
     if button == 1 then
         shoot()
+    elseif button == 2 then
+        add_ammo(1)
     end
     --mx = math.floor((x - window.translateX) / window.scale + 0.5)
     --my = math.floor((y - window.translateY) / window.scale + 0.5)
-
 
     --print("click on " .. mx .. " " .. my)
 end
@@ -271,11 +234,6 @@ function love.keypressed(key, scancode, isrepeat)
             love.event.push("quit", "restart")
         end
 
-        if key == "s" then
-            local s = get_random_item({ "jumper", "window", "door", "runner" })
-            spawner:add_guy(s)
-        end
-
         if game_state == GAME_STATES.title then
         elseif game_state == GAME_STATES.game then
             if key == "space" then
@@ -285,7 +243,7 @@ function love.keypressed(key, scancode, isrepeat)
             end
         elseif game_state == GAME_STATES.pause then
             if key == "space" then
-                print("on pause pressing pause")
+                --print("on pause pressing pause")
                 game_state = GAME_STATES.game
                 is_paused = false
                 return
@@ -305,7 +263,6 @@ end
 function love.draw()
     -- first translate, then scale
     love.graphics.translate(window.translateX, window.translateY)
-
     love.graphics.scale(window.scale)
     -- your graphics code here, optimized for fullHD
 
@@ -332,7 +289,7 @@ function love.draw()
     end
 
     if game_state == GAME_STATES.game then
-        draw_game()
+
     end
 
     if game_state == GAME_STATES.gameover then
@@ -350,11 +307,12 @@ function love.draw()
     hud:draw()
 
     if game_state == GAME_STATES.pause then
-        draw_game()
+        --draw_game()
         draw_pause()
     end
 
     --print("Current FPS: "..tostring(love.timer.getFPS( )))
+    print(show_hurt)
 end
 
 function resize(w, h)
@@ -391,19 +349,9 @@ function goto_gameover(reason)
     spawner:reset()
     save_high_score(player.score)
     bg_music:stop()
-    change_gamestate(GAME_STATES.gameover)
-    print("game over: " .. reason)
 end
 
 function draw_title()
-
-end
-
-function draw_day_title()
-
-end
-
-function draw_game()
 
 end
 
@@ -421,13 +369,13 @@ end
 
 function is_on_screen(obj)
     if ((obj.x >= screen_rect.x + screen_rect.w) or
-            (obj.x + obj.w <= screen_rect.x) or
-            (obj.y >= screen_rect.y + screen_rect.h) or
-            (obj.y + obj.h <= screen_rect.y)) then
-        return false
-    else
-        return true
-    end
+        (obj.x + obj.w <= screen_rect.x) or
+        (obj.y >= screen_rect.y + screen_rect.h) or
+    (obj.y + obj.h <= screen_rect.y)) then
+    return false
+else
+    return true
+end
 end
 
 function start_game()
@@ -438,9 +386,6 @@ function start_game()
     bg_music:setVolume(0.2)
     bg_music:play()
     spawner:reset()
-    shake_duration = 0
-    shake_wait = 0
-    shake_offset = { x = 0, y = 0 }
 end
 
 function reset_game()

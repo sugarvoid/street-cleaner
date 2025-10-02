@@ -3,11 +3,11 @@ MuzzleFx = Object:extend()
 local MUZZLE_SPR = love.graphics.newImage("asset/image/muzzle_flash_sheet.png")
 local MUZZLE_GRID = anim8.newGrid(18, 18, MUZZLE_SPR:getWidth(), MUZZLE_SPR:getHeight())
 
-function MuzzleFx:new(parent, x, y)
+function MuzzleFx:new(parent)
     self.x = x or 0
     self.y = y or 0
     self.is_visible = false
-    --self.parent = parent
+    self.parent = parent
     self.animation = anim8.newAnimation(MUZZLE_GRID(('1-4'), 1), 0.1, function() self:on_finish() end)
     --table.insert(self.parent, self)
 end

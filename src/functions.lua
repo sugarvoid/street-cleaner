@@ -1,3 +1,15 @@
+
+function Position(x, y)
+    return {x = x or 0, y = y or 0}
+end
+
+function Health(max_hp)
+    return {
+        current = max_hp or 100,
+        max = max_hp or 100
+    }
+end
+
 function get_next_time(min_sec, max_sec)
     local _min = min_sec * 60
     local _max = max_sec * 60
@@ -115,13 +127,13 @@ end
 
 function is_colliding(rect_a, rect_b)
     if ((rect_a.x >= rect_b.x + rect_b.w) or
-            (rect_a.x + rect_a.w <= rect_b.x) or
-            (rect_a.y >= rect_b.y + rect_b.h) or
-            (rect_a.y + rect_a.h <= rect_b.y)) then
-        return false
-    else
-        return true
-    end
+        (rect_a.x + rect_a.w <= rect_b.x) or
+        (rect_a.y >= rect_b.y + rect_b.h) or
+    (rect_a.y + rect_a.h <= rect_b.y)) then
+    return false
+else
+    return true
+end
 end
 
 ---@param _table table

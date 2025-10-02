@@ -31,7 +31,12 @@ function Spawner:add_guy(e_type)
     if guy ~= nil then
         table.insert(enemies, guy)
     end
-    
+
+end
+
+function Spawner:spawn_guy()
+    local s = get_random_item({"jumper", "window", "door", "runner"})
+    self:add_guy(s)
 end
 
 function update_lane(lane, occupied)
@@ -45,7 +50,7 @@ function get_spawn_index(e_letter)
     repeat
         tries = tries - 1
         if tries <= 0 then
-            return -2
+            return - 2
         end
         s_data = get_random_item(SPAWN_DATA)
     until string.sub(s_data.id, 1, 1) == e_letter and s_data.available == true
