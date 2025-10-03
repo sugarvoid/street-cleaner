@@ -144,6 +144,21 @@ function love.quit()
 end
 
 function love.update(dt)
+
+    if love.keyboard.isDown("w")  then
+            mouse.position.y = mouse.position.y - 3
+        end
+        if love.keyboard.isDown("s")  then
+            mouse.position.y = mouse.position.y + 3
+        end
+        if love.keyboard.isDown("a")  then
+            mouse.position.x = mouse.position.x - 3
+        end
+        if love.keyboard.isDown("d")  then
+           mouse.position.x = mouse.position.x + 3
+        end
+
+
     if show_flash > 0 then
         show_flash = show_flash - 1
     end
@@ -193,7 +208,7 @@ end
 function love.mousepressed(x, y, button, _)
     --print(button)
     if button == 1 then
-        shoot()
+       -- shoot()
     elseif button == 2 then
         add_ammo(1)
     end
@@ -236,16 +251,24 @@ function get_closer_enemy(a, b)
     return a.position.y > b.position.y
 end
 
+function love.k()
+    
+end
+
 function love.keypressed(key, scancode, isrepeat)
     if not isrepeat then
         if key == "escape" then
             quit_game()
         end
 
-        if key == "r" then
-            love.event.push("quit", "restart")
+        if key == "space" then
+            shoot()
         end
 
+        if key == "r" then
+            love.event.push("quit", "restart")
+            
+        end
         -- if game_state == GAME_STATES.title then
         -- -- elseif game_state == GAME_STATES.game then
         -- --     if key == "space" then
@@ -264,6 +287,7 @@ function love.keypressed(key, scancode, isrepeat)
 
         -- end
     end
+    
 end
 
 function change_gamestate(state)

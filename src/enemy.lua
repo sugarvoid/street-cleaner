@@ -106,7 +106,7 @@ end
 
 function BaseEnemy:on_hit()
     player.score = player.score + 100
-    BloodFx(mx, my, blood_container)
+    BloodFx(mouse.position.x, mouse.position.y, blood_container)
     self.is_alive = false
     self.current_anim = self.animations.die
     self.current_anim:resume()

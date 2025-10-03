@@ -11,8 +11,8 @@ function Mouse:new()
 end
 
 function Mouse:update(x, y)
-    self.position.x = x - 16
-    self.position.y = y - 6
+    --self.position.x = x - 16
+    --self.position.y = y - 6
     self.hitbox:update()
 end
 
