@@ -27,6 +27,14 @@ local intro_time = 0
 local high_score = 0
 local level_length = 20
 local show_flash = 0
+
+
+local shoot_player = love.audio.newSource("asset/shoot_player.ogg", "static")
+shoot_player:setVolume(0.4)
+
+local bg_music = love.audio.newSource("asset/c_muPlumusLand.ogg", "stream")
+bg_music:setLooping(true)
+
 show_hurt = 0
 
 all_clocks = {
@@ -61,13 +69,14 @@ enemies = {}
 blood_container = {}
 bhit_container = {}
 
+require("src.functions")
 require("src.clock")
 require("src.alert_icon")
 require("src.score_fx")
 require("src.muzzle_flash")
 require("src.enemy")
 require("src.hitbox")
-require("src.functions")
+
 require("src.mouse")
 require("lib.timer")
 require("src.hud")
@@ -97,7 +106,7 @@ tmr_spawn:start()
 function love.load()
     love.mouse.setVisible(false)
     set_bgcolor_from_hex(COLORS.CF_BLUE)
-    change_gamestate(GAME_STATES.game)
+    --change_gamestate(GAME_STATES.game)
     --  high_score = load_high_score()
     if is_debug_on then
         logger.level = logger.Level.DEBUG
@@ -122,6 +131,8 @@ function love.load()
     width, height = love.graphics.getDimensions()
     love.window.setMode(width, height, {resizable = true, borderless = false})
     resize(width, height) -- update new translation and scale
+
+    start_game()
 end
 
 function love.quit()
@@ -194,6 +205,7 @@ end
 
 function shoot()
     if player.ammo >= 1 then
+        play_sound(shoot_player)
         player.ammo = math.clamp(0, player.ammo - 1, player.max_ammo)
         show_flash = 0
         show_flash = 2
@@ -234,23 +246,23 @@ function love.keypressed(key, scancode, isrepeat)
             love.event.push("quit", "restart")
         end
 
-        if game_state == GAME_STATES.title then
-        elseif game_state == GAME_STATES.game then
-            if key == "space" then
-                game_state = GAME_STATES.pause
-                is_paused = true
-                return
-            end
-        elseif game_state == GAME_STATES.pause then
-            if key == "space" then
-                --print("on pause pressing pause")
-                game_state = GAME_STATES.game
-                is_paused = false
-                return
-            end
-        elseif game_state == GAME_STATES.gameover then
+        -- if game_state == GAME_STATES.title then
+        -- -- elseif game_state == GAME_STATES.game then
+        -- --     if key == "space" then
+        -- --         game_state = GAME_STATES.pause
+        -- --         is_paused = true
+        -- --         return
+        -- --     end
+        -- -- elseif game_state == GAME_STATES.pause then
+        -- --     if key == "space" then
+        -- --         --print("on pause pressing pause")
+        -- --         game_state = GAME_STATES.game
+        -- --         is_paused = false
+        -- --         return
+        -- --     end
+        -- elseif game_state == GAME_STATES.gameover then
 
-        end
+        -- end
     end
 end
 
@@ -312,7 +324,7 @@ function love.draw()
     end
 
     --print("Current FPS: "..tostring(love.timer.getFPS( )))
-    print(show_hurt)
+    --print(show_hurt)
 end
 
 function resize(w, h)
@@ -379,13 +391,13 @@ end
 end
 
 function start_game()
-    game_clock:start()
-    spawner:start()
-    high_score = load_high_score()
+    --game_clock:start()
+    --spawner:start()
+    --high_score = load_high_score()
     change_gamestate(GAME_STATES.game)
-    bg_music:setVolume(0.2)
+    --bg_music:setVolume(5.2)
     bg_music:play()
-    spawner:reset()
+--    spawner:reset()
 end
 
 function reset_game()

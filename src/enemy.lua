@@ -12,6 +12,15 @@ local RUNNER_GRID = anim8.newGrid(42, 42, RUNNER_SPR:getWidth(), RUNNER_SPR:getH
 local JUMPER_SPR = love.graphics.newImage("asset/image/jumper_sheet.png")
 local JUMPER_GRID = anim8.newGrid(24, 40, JUMPER_SPR:getWidth(), JUMPER_SPR:getHeight())
 
+
+
+local shoot_a = love.audio.newSource("asset/shoot_door.ogg", "static")
+shoot_a:setVolume(0.4)
+
+local shoot_b = love.audio.newSource("asset/shoot_runner.ogg", "static")
+shoot_b:setVolume(0.4)
+
+
 -- function anim_done(s)
 --     print(s .. " animation is done")
 -- end
@@ -58,13 +67,16 @@ function BaseEnemy:new()
     self.speed = nil
     self.current_anim = nil
     self.shoot_cooldown = get_rnd(60 * 2, 60 * 5)
-    self.tmr_shoot = Timer:new(self.shoot_cooldown, function() self:shoot() end, true)
+    
     self.animations = {enter = {}, die = nil, jump = nil, land = nil, run = nil}
     self.is_hovered = false
     self.location_index = nil
     self.muzzle_position = Position()
+    self.alert_pos = Position()
     self.alert_icon = AlertFx(self)
     self.muzzle_flash = MuzzleFx(self)
+    self.tmr_shoot = Timer:new(self.shoot_cooldown, function() self.alert_icon:show() end, true)
+    self.shoot_sfx = nil
 end
 
 function BaseEnemy:draw()
@@ -83,6 +95,7 @@ end
 function BaseEnemy:shoot()
     if self.is_alive then
         --print("shooting")
+        play_sound(self.shoot_sfx)
         self.muzzle_flash:show()
         self.tmr_shoot:stop()
         player:take_damage()
@@ -103,6 +116,8 @@ function BaseEnemy:update(dt)
     self.is_hovered = is_colliding(mouse.hitbox, self.hitbox) and self.is_alive
     self.tmr_shoot:update()
     self.hitbox:update()
+    self.alert_icon.position.x = self.position.x
+    self.alert_icon.position.y = self.position.y - 10
     self.alert_icon:update(dt)
     self.muzzle_flash:update(dt)
     self.current_anim:update(dt)
@@ -130,6 +145,8 @@ DoorGuy = BaseEnemy:extend()
 function DoorGuy:new(idx)
     DoorGuy.super.new(self)
     self.id = "door_01"
+
+    self.shoot_sfx = shoot_a:clone()
 
     local _spawn = get_random_item(DOOR_SPAWN_POS).position
     --self.position = { x = _spawn.x, y = _spawn.y }
@@ -174,7 +191,7 @@ WindowGuy = BaseEnemy:extend()
 function WindowGuy:new(idx)
     WindowGuy.super.new(self)
     self.id = "door_01"
-
+    self.shoot_sfx = shoot_a:clone()
     -- self.position = get_random_item(WINDOW_SPAWN_POS).position
 
     local s_data = SPAWN_DATA[idx]
@@ -222,6 +239,7 @@ function RunnerGuy:new()
     RunnerGuy.super.new(self)
     self.id = "door_01"
     self.name = "runner"
+    self.shoot_sfx = shoot_b:clone()
     self.speed = -45
     --TODO: Make positions random-ish
     self.position = {x = 150, y = 100}
@@ -267,6 +285,8 @@ function JumperGuy:new(idx)
     JumperGuy.super.new(self)
     self.id = "door_01"
     self.name = "jumper"
+    self.shoot_sfx = shoot_b:clone()
+    
     self.speed = -25
 
     local s_data = SPAWN_DATA[idx]
@@ -326,5 +346,3 @@ function JumperGuy:new(idx)
             self:remove()
         end
     end
-
-   
