@@ -12,14 +12,11 @@ local RUNNER_GRID = anim8.newGrid(42, 42, RUNNER_SPR:getWidth(), RUNNER_SPR:getH
 local JUMPER_SPR = love.graphics.newImage("asset/image/jumper_sheet.png")
 local JUMPER_GRID = anim8.newGrid(24, 40, JUMPER_SPR:getWidth(), JUMPER_SPR:getHeight())
 
-
-
 local shoot_a = love.audio.newSource("asset/shoot_door.ogg", "static")
 shoot_a:setVolume(0.4)
 
 local shoot_b = love.audio.newSource("asset/shoot_runner.ogg", "static")
 shoot_b:setVolume(0.4)
-
 
 -- function anim_done(s)
 --     print(s .. " animation is done")
@@ -67,12 +64,13 @@ function BaseEnemy:new()
     self.speed = nil
     self.current_anim = nil
     self.shoot_cooldown = get_rnd(60 * 2, 60 * 5)
-    
+
     self.animations = {enter = {}, die = nil, jump = nil, land = nil, run = nil}
     self.is_hovered = false
     self.location_index = nil
     self.muzzle_position = Position()
     self.alert_pos = Position()
+    self.muzzle_pos = Position()
     self.alert_icon = AlertFx(self)
     self.muzzle_flash = MuzzleFx(self)
     self.tmr_shoot = Timer:new(self.shoot_cooldown, function() self.alert_icon:show() end, true)
@@ -81,9 +79,11 @@ end
 
 function BaseEnemy:draw()
     self.current_anim:draw(self.spr_sheet, self.position.x, self.position.y)
-    --self.hitbox:draw()
     self.alert_icon:draw()
     self.muzzle_flash:draw()
+    if is_debug_on then
+        self.hitbox:draw()
+    end
 end
 
 function BaseEnemy:check_if_hovered()
@@ -118,6 +118,10 @@ function BaseEnemy:update(dt)
     self.hitbox:update()
     self.alert_icon.position.x = self.position.x
     self.alert_icon.position.y = self.position.y - 10
+
+    self.muzzle_flash.position.x = self.position.x + 3
+    self.muzzle_flash.position.y = self.position.y + 10
+
     self.alert_icon:update(dt)
     self.muzzle_flash:update(dt)
     self.current_anim:update(dt)
@@ -156,7 +160,7 @@ function DoorGuy:new(idx)
     self.position = {x = s_data.position.x, y = s_data.position.y}
 
     self.spr_sheet = DOOR_SPR
-    self.hitbox = Hitbox(self, 0, 0, 20, 42, 2)
+    self.hitbox = Hitbox(self, self.position.x, self.position.y, 16, 38, 4)
 
     self.animations.enter = anim8.newAnimation(DOOR_GRID(('1-3'), 1), 0.2, function() self:anim_done("enter") end)
     self.animations.die = anim8.newAnimation(DOOR_GRID(('4-6'), 1), 0.2, function() self:anim_done("die") end)
@@ -201,7 +205,7 @@ function WindowGuy:new(idx)
     --self.position = { x = _spawn.x, y = _spawn.y }
     self.position = {x = s_data.position.x, y = s_data.position.y}
     self.spr_sheet = WINDOW_SPR
-    self.hitbox = Hitbox(self, 0, 0, 20, 24, 2)
+    self.hitbox = Hitbox(self, self.position.x, self.position.y, 18, 24, 4)
 
     self.animations.enter = anim8.newAnimation(WINDOW_GRID(('1-3'), 1), 0.2, function() self:anim_done("enter") end)
     self.animations.die = anim8.newAnimation(WINDOW_GRID(('4-6'), 1), 0.2, function() self:anim_done("die") end)
@@ -244,7 +248,7 @@ function RunnerGuy:new()
     --TODO: Make positions random-ish
     self.position = {x = 150, y = 100}
     self.spr_sheet = RUNNER_SPR
-    self.hitbox = Hitbox(self, 0, 0, 16, 38, 16, 3)
+    self.hitbox = Hitbox(self, self.position.x, self.position.y, 16, 38, 16, 3)
 
     self.animations.enter = anim8.newAnimation(RUNNER_GRID(('1-2'), 1), 0.2, function() self:anim_done("enter") end)
     self.animations.die = anim8.newAnimation(RUNNER_GRID(('3-4'), 1), 0.2, function() self:anim_done("die") end)
@@ -286,7 +290,7 @@ function JumperGuy:new(idx)
     self.id = "door_01"
     self.name = "jumper"
     self.shoot_sfx = shoot_b:clone()
-    
+
     self.speed = -25
 
     local s_data = SPAWN_DATA[idx]
@@ -303,7 +307,7 @@ function JumperGuy:new(idx)
     self.peak_y = self.starting_y - 10
     self.landing_y = 110
     self.spr_sheet = JUMPER_SPR
-    self.hitbox = Hitbox(self, 0, 0, 20, 32, 4, 3)
+    self.hitbox = Hitbox(self, self.position.x, self.position.y, 16, 32, 6, 3)
 
     self.animations.enter = anim8.newAnimation(JUMPER_GRID(('1-3'), 1), 1, function() self:anim_done("enter") end)
     self.animations.die = anim8.newAnimation(JUMPER_GRID(('4-6'), 1), 0.2, function() self:anim_done("die") end)
@@ -346,3 +350,5 @@ function JumperGuy:new(idx)
             self:remove()
         end
     end
+
+   

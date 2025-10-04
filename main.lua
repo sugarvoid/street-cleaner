@@ -5,6 +5,7 @@ Object = require "lib.classic"
 logger = require("lib.log")
 flux = require("lib.flux")
 anim8 = require("lib.anim8")
+baton = require("lib.baton")
 
 logger.info("Starting game")
 
@@ -28,12 +29,27 @@ local high_score = 0
 local level_length = 20
 local show_flash = 0
 
-
 local shoot_player = love.audio.newSource("asset/shoot_player.ogg", "static")
 shoot_player:setVolume(0.4)
 
 local bg_music = love.audio.newSource("asset/c_muPlumusLand.ogg", "stream")
 bg_music:setLooping(true)
+
+input = baton.new {
+    controls = {
+        left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
+        right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
+        up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
+        down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
+        focus = {'key:x', 'button:x', 'key:lshift'},
+        shoot = {'key:z', 'button:a', 'key:space'},
+        quit = {'button:back', 'key:escape'},
+        reset = {'key:r'},
+    },
+    pairs = {
+    move = {'left', 'right', 'up', 'down'}},
+    joystick = love.joystick.getJoysticks()[1],
+}
 
 show_hurt = 0
 
@@ -145,19 +161,31 @@ end
 
 function love.update(dt)
 
-    if love.keyboard.isDown("w")  then
-            mouse.position.y = mouse.position.y - 3
-        end
-        if love.keyboard.isDown("s")  then
-            mouse.position.y = mouse.position.y + 3
-        end
-        if love.keyboard.isDown("a")  then
-            mouse.position.x = mouse.position.x - 3
-        end
-        if love.keyboard.isDown("d")  then
-           mouse.position.x = mouse.position.x + 3
-        end
+    if key == "escape" then
+        quit_game()
+    end
+    if input:pressed("shoot") then
+        shoot()
+    end
+    if input:pressed("quit") then
+        quit_game()
+    end
+    if input:pressed("reset") then
+        love.event.push("quit", "restart")
+    end
 
+    -- if love.keyboard.isDown("w")  then
+    --         mouse.position.y = mouse.position.y - 3
+    --     end
+    --     if love.keyboard.isDown("s")  then
+    --         mouse.position.y = mouse.position.y + 3
+    --     end
+    --     if love.keyboard.isDown("a")  then
+    --         mouse.position.x = mouse.position.x - 3
+    --     end
+    --     if love.keyboard.isDown("d")  then
+    --        mouse.position.x = mouse.position.x + 3
+    --     end
 
     if show_flash > 0 then
         show_flash = show_flash - 1
@@ -198,7 +226,8 @@ function love.update(dt)
         update_pause()
     end
 
-    mouse:update(mx, my)
+    mouse:update(dt)
+    input:update()
 
     --print(#enemies)
     -- print((collectgarbage('count') / 1024))
@@ -208,7 +237,7 @@ end
 function love.mousepressed(x, y, button, _)
     --print(button)
     if button == 1 then
-       -- shoot()
+        -- shoot()
     elseif button == 2 then
         add_ammo(1)
     end
@@ -252,43 +281,35 @@ function get_closer_enemy(a, b)
 end
 
 function love.k()
-    
+
 end
 
-function love.keypressed(key, scancode, isrepeat)
-    if not isrepeat then
-        if key == "escape" then
-            quit_game()
-        end
+-- function love.keypressed(key, scancode, isrepeat)
+--     if not isrepeat then
 
-        if key == "space" then
-            shoot()
-        end
+--         -- if key == "r" then
+--         --     love.event.push("quit", "restart")
+--         -- end
+--         -- if game_state == GAME_STATES.title then
+--         -- -- elseif game_state == GAME_STATES.game then
+--         -- --     if key == "space" then
+--         -- --         game_state = GAME_STATES.pause
+--         -- --         is_paused = true
+--         -- --         return
+--         -- --     end
+--         -- -- elseif game_state == GAME_STATES.pause then
+--         -- --     if key == "space" then
+--         -- --         --print("on pause pressing pause")
+--         -- --         game_state = GAME_STATES.game
+--         -- --         is_paused = false
+--         -- --         return
+--         -- --     end
+--         -- elseif game_state == GAME_STATES.gameover then
 
-        if key == "r" then
-            love.event.push("quit", "restart")
-            
-        end
-        -- if game_state == GAME_STATES.title then
-        -- -- elseif game_state == GAME_STATES.game then
-        -- --     if key == "space" then
-        -- --         game_state = GAME_STATES.pause
-        -- --         is_paused = true
-        -- --         return
-        -- --     end
-        -- -- elseif game_state == GAME_STATES.pause then
-        -- --     if key == "space" then
-        -- --         --print("on pause pressing pause")
-        -- --         game_state = GAME_STATES.game
-        -- --         is_paused = false
-        -- --         return
-        -- --     end
-        -- elseif game_state == GAME_STATES.gameover then
+--         -- end
+--     end
 
-        -- end
-    end
-    
-end
+-- end
 
 function change_gamestate(state)
     if state == GAME_STATES.game then
@@ -421,7 +442,7 @@ function start_game()
     change_gamestate(GAME_STATES.game)
     --bg_music:setVolume(5.2)
     bg_music:play()
---    spawner:reset()
+    --    spawner:reset()
 end
 
 function reset_game()

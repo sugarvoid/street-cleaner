@@ -6,6 +6,7 @@ local MUZZLE_GRID = anim8.newGrid(18, 18, MUZZLE_SPR:getWidth(), MUZZLE_SPR:getH
 function MuzzleFx:new(parent)
     self.x = x or 0
     self.y = y or 0
+    self.position = Position()
     self.is_visible = false
     self.parent = parent
     self.animation = anim8.newAnimation(MUZZLE_GRID(('1-4'), 1), 0.1, function() self:on_finish() end)
@@ -31,6 +32,6 @@ end
 
 function MuzzleFx:draw()
     if self.is_visible then
-        self.animation:draw(MUZZLE_SPR, self.x, self.y, 0, 1, 1, 16, 16)
+        self.animation:draw(MUZZLE_SPR, self.position.x, self.position.y, 0, 1, 1, 16, 16)
     end
 end

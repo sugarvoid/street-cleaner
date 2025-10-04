@@ -2,6 +2,7 @@ local ammo_container = love.graphics.newImage("asset/image/ammo_container.png")
 local ac_position = {x = 168, y = 181}
 local ammo_icon = love.graphics.newImage("asset/image/bullet.png")
 local health_icon = love.graphics.newImage("asset/image/health_unit.png")
+local focus_icon = love.graphics.newImage("asset/image/focus_unit.png")
 local black_bar = love.graphics.newImage("asset/image/hud_bar.png")
 
 local HUD_TEXT_SHEET = love.graphics.newImage("asset/image/hud_text.png")
@@ -25,6 +26,9 @@ hud = {
         end
         for i = 1, player.health.current do
             love.graphics.draw(health_icon, 75 + (7 * (i - 1)), 189)
+        end
+        for i = 1, mouse.focus do
+            love.graphics.draw(focus_icon, 75 + (7 * (i - 1)), 190 + 8)
         end
         love.graphics.print(player.score, 300, 190, 0, 0.2, 0.2)
     end,

@@ -5,9 +5,8 @@
 
 - Code for base enemy
     - Make body flash away a disappear 
-    - Add shoot fx
-    - Add alert fx
     - Figure out muzzle position
+    - Figure out alert position
 
 
 
