@@ -11,8 +11,8 @@ local health = love.graphics.newQuad(0, 0, 176, 30, HUD_TEXT_SHEET)
 local focus = love.graphics.newQuad(0, 29, 176, 30, HUD_TEXT_SHEET)
 local score = love.graphics.newQuad(0, 58, 176, 30, HUD_TEXT_SHEET)
 
-local AMMO_STARTING_X = 180
-local AMMO_Y = 194
+local AMMO_STARTING_X = 172
+local AMMO_Y = 189
 
 hud = {
     draw = function(self)

@@ -45,6 +45,7 @@ input = baton.new {
         shoot = {'key:z', 'button:a', 'key:space'},
         quit = {'button:back', 'key:escape'},
         reset = {'key:r'},
+        pause = {'key:p'},
     },
     pairs = {
     move = {'left', 'right', 'up', 'down'}},
@@ -160,19 +161,80 @@ function love.quit()
 end
 
 function love.update(dt)
+    flux.update(dt)
+    if game_state == GAME_STATES.game then
+        if input:pressed("shoot") then
+            shoot()
+        end
+        if show_flash > 0 then
+            show_flash = show_flash - 1
+        end
 
-    if key == "escape" then
-        quit_game()
+        if show_hurt > 0 then
+            show_hurt = show_hurt - 1
+        end
+        for _, container in ipairs({enemies, blood_container, bhit_container}) do
+            for _, obj in ipairs(container) do
+                obj:update(dt)
+            end
+        end
+        mouse:update(dt)
+        all_clocks:update()
     end
-    if input:pressed("shoot") then
-        shoot()
+
+    if game_state == GAME_STATES.pause then
+
     end
+
+    if game_state == GAME_STATES.gameover then
+
+    end
+
+    --if key == "escape" then
+    --    quit_game()
+    --end
+
     if input:pressed("quit") then
         quit_game()
     end
     if input:pressed("reset") then
         love.event.push("quit", "restart")
     end
+
+    if input:pressed("pause") then
+        if game_state == GAME_STATES.game then
+            game_state = GAME_STATES.pause
+            bg_music:setVolume(0.6)
+            is_paused = true
+            --return
+        elseif game_state == GAME_STATES.pause then
+            game_state = GAME_STATES.game
+            bg_music:setVolume(1)
+            is_paused = false
+            --return
+        end
+    end
+
+    --if key == "r" then
+    --     love.event.push("quit", "restart")
+    -- end
+    -- if game_state == GAME_STATES.title then
+    -- -- elseif game_state == GAME_STATES.game then
+    -- --     if key == "space" then
+    -- --         game_state = GAME_STATES.pause
+    -- --         is_paused = true
+    -- --         return
+    -- --     end
+    -- -- elseif game_state == GAME_STATES.pause then
+    -- --     if key == "space" then
+    -- --         --print("on pause pressing pause")
+    -- --         game_state = GAME_STATES.game
+    -- --         is_paused = false
+    -- --         return
+    -- --     end
+    -- elseif game_state == GAME_STATES.gameover then
+
+    -- end
 
     -- if love.keyboard.isDown("w")  then
     --         mouse.position.y = mouse.position.y - 3
@@ -187,14 +249,6 @@ function love.update(dt)
     --        mouse.position.x = mouse.position.x + 3
     --     end
 
-    if show_flash > 0 then
-        show_flash = show_flash - 1
-    end
-
-    if show_hurt > 0 then
-        show_hurt = show_hurt - 1
-    end
-
     -- for _, a in pairs(enemies) do
     --     a:update(dt)
     -- end
@@ -207,16 +261,8 @@ function love.update(dt)
     --     bh:update(dt)
     -- end
 
-    for _, container in ipairs({enemies, blood_container, bhit_container}) do
-        for _, obj in ipairs(container) do
-            obj:update(dt)
-        end
-    end
-
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
     my = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
-
-    all_clocks:update()
 
     if game_state == GAME_STATES.game then
         update_game(dt)
@@ -226,7 +272,6 @@ function love.update(dt)
         update_pause()
     end
 
-    mouse:update(dt)
     input:update()
 
     --print(#enemies)
@@ -280,10 +325,6 @@ function get_closer_enemy(a, b)
     return a.position.y > b.position.y
 end
 
-function love.k()
-
-end
-
 -- function love.keypressed(key, scancode, isrepeat)
 --     if not isrepeat then
 
@@ -323,49 +364,17 @@ function love.draw()
     love.graphics.scale(window.scale)
     -- your graphics code here, optimized for fullHD
 
-    love.graphics.draw(background_img, 0, 0)
-
-    for _, a in pairs(enemies) do
-        a:draw()
-    end
-
-    love.graphics.draw(wall, 150, 135)
-
-    for _, b in pairs(blood_container) do
-        b:draw()
-    end
-
-    for _, bh in pairs(bhit_container) do
-        bh:draw()
-    end
-
-    mouse:draw()
-
-    if game_state == GAME_STATES.title then
-        draw_title()
-    end
-
     if game_state == GAME_STATES.game then
+        draw_game()
+    end
 
+    if game_state == GAME_STATES.pause then
+        draw_game()
+        draw_pause()
     end
 
     if game_state == GAME_STATES.gameover then
         draw_gameover()
-    end
-
-    if show_flash > 0 then
-        love.graphics.draw(flash_img, 0, 0)
-    end
-
-    if show_hurt > 0 then
-        love.graphics.draw(hurt_img, 0, 0)
-    end
-
-    hud:draw()
-
-    if game_state == GAME_STATES.pause then
-        --draw_game()
-        draw_pause()
     end
 
     --print("Current FPS: "..tostring(love.timer.getFPS( )))
@@ -412,14 +421,43 @@ function draw_title()
 
 end
 
+function draw_game()
+    love.graphics.draw(background_img, 0, 0)
+
+    for _, a in pairs(enemies) do
+        a:draw()
+    end
+
+    love.graphics.draw(wall, 150, 135)
+
+    for _, b in pairs(blood_container) do
+        b:draw()
+    end
+
+    for _, bh in pairs(bhit_container) do
+        bh:draw()
+    end
+
+    mouse:draw()
+
+    if show_flash > 0 then
+        love.graphics.draw(flash_img, 0, 0)
+    end
+
+    if show_hurt > 0 then
+        love.graphics.draw(hurt_img, 0, 0)
+    end
+
+    hud:draw()
+end
+
 function draw_pause()
-    love.graphics.draw(pause_img, -50, 0)
+    love.graphics.draw(pause_img, 0, 0)
 end
 
 function draw_gameover()
-    love.graphics.draw(gameover_paper, 0, 0)
     love.graphics.push("all")
-    set_color_from_hex(COLORS.BLACK)
+    set_color_from_hex(COLORS.WHITE)
     love.graphics.print("Game Over", 37, 8, 0, 0.6, 0.6)
     love.graphics.pop()
 end
@@ -454,7 +492,7 @@ function reset_game()
 end
 
 function update_game(dt)
-    flux.update(dt)
+
 end
 
 function update_pause()

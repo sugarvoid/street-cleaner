@@ -13,7 +13,7 @@ end
 
 function PlayerHit:update(dt)
     self.tic = self.tic + 1
-    if self.tic >= 40 then
+    if self.tic >= 120 then
         del(self.parent, self)
     end
 end
