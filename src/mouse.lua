@@ -19,6 +19,7 @@ function Mouse:new()
     self.focused = false
     self.frame = 1
     self.focus = 6
+    self.score_fx = ScoreFx(self)
     self.__focus_tmr = 0
 end
 
@@ -29,7 +30,6 @@ end
 -- end
 
 function Mouse:update(dt)
-
     if input:down 'focus' and self.focus > 0 then
         self.__focus_tmr = 0
         self.focus = self.focus - 0.02
@@ -93,4 +93,5 @@ function Mouse:draw()
         self.hitbox:draw()
     end
     love.graphics.draw(RETICLE_SHEET, reticle_frames[self.frame], self.position.x, self.position.y)
+    self.score_fx:draw()
 end
