@@ -5,8 +5,8 @@
 
 - Code for base enemy
     - Make body flash away a disappear 
-    - Figure out muzzle position
-    - Figure out alert position
+
+- Clean up
 
 
 

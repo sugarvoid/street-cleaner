@@ -1,6 +1,5 @@
-is_debug_on = true
+is_debug_on = false
 
---love = require("love")
 Object = require "lib.classic"
 logger = require("lib.log")
 flux = require("lib.flux")
@@ -17,17 +16,16 @@ end
 
 love.graphics.setDefaultFilter("nearest", "nearest")
 
-local GAME_STATES = {
+GAME_STATES = {
     title = 1,
     game = 2,
     pause = 3,
     gameover = 4,
 }
 local game_state = nil
-local intro_time = 0
 local high_score = 0
-local level_length = 20
 local show_flash = 0
+show_hurt = 0
 
 local shoot_player = love.audio.newSource("asset/shoot_player.ogg", "static")
 shoot_player:setVolume(0.4)
@@ -52,15 +50,11 @@ input = baton.new {
     joystick = love.joystick.getJoysticks()[1],
 }
 
-show_hurt = 0
+
 
 all_clocks = {
     __clocks = {},
     update = function(self)
-        -- for c in table.for_each(self.__clocks) do
-        --     c:update()
-        -- end
-
         for _, c in ipairs(self.__clocks) do
             c:update()
         end
@@ -139,7 +133,6 @@ function love.load()
     background_img = love.graphics.newImage("asset/image/streetCleanersLayout.png")
 
     font:setFilter("nearest")
-    --font_hud:setFilter("nearest")
     love.graphics.setFont(font)
 
     -- if your code was optimized for fullHD:
@@ -182,16 +175,10 @@ function love.update(dt)
     end
 
     if game_state == GAME_STATES.pause then
-
     end
 
     if game_state == GAME_STATES.gameover then
-
     end
-
-    --if key == "escape" then
-    --    quit_game()
-    --end
 
     if input:pressed("quit") then
         quit_game()
@@ -205,60 +192,12 @@ function love.update(dt)
             game_state = GAME_STATES.pause
             bg_music:setVolume(0.6)
             is_paused = true
-            --return
         elseif game_state == GAME_STATES.pause then
             game_state = GAME_STATES.game
             bg_music:setVolume(1)
             is_paused = false
-            --return
         end
     end
-
-    --if key == "r" then
-    --     love.event.push("quit", "restart")
-    -- end
-    -- if game_state == GAME_STATES.title then
-    -- -- elseif game_state == GAME_STATES.game then
-    -- --     if key == "space" then
-    -- --         game_state = GAME_STATES.pause
-    -- --         is_paused = true
-    -- --         return
-    -- --     end
-    -- -- elseif game_state == GAME_STATES.pause then
-    -- --     if key == "space" then
-    -- --         --print("on pause pressing pause")
-    -- --         game_state = GAME_STATES.game
-    -- --         is_paused = false
-    -- --         return
-    -- --     end
-    -- elseif game_state == GAME_STATES.gameover then
-
-    -- end
-
-    -- if love.keyboard.isDown("w")  then
-    --         mouse.position.y = mouse.position.y - 3
-    --     end
-    --     if love.keyboard.isDown("s")  then
-    --         mouse.position.y = mouse.position.y + 3
-    --     end
-    --     if love.keyboard.isDown("a")  then
-    --         mouse.position.x = mouse.position.x - 3
-    --     end
-    --     if love.keyboard.isDown("d")  then
-    --        mouse.position.x = mouse.position.x + 3
-    --     end
-
-    -- for _, a in pairs(enemies) do
-    --     a:update(dt)
-    -- end
-
-    -- for _, b in pairs(blood_container) do
-    --     b:update(dt)
-    -- end
-
-    -- for _, bh in pairs(bhit_container) do
-    --     bh:update(dt)
-    -- end
 
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
     my = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
@@ -279,9 +218,7 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, button, _)
-    --print(button)
     if button == 1 then
-        -- shoot()
     elseif button == 2 then
         add_ammo(1)
     end
@@ -297,7 +234,6 @@ function shoot()
         player.ammo = math.clamp(0, player.ammo - 1, player.max_ammo)
         show_flash = 0
         show_flash = 2
-        --shake_duration=0.1
 
         local overlaps = {}
 
@@ -305,54 +241,27 @@ function shoot()
             if e.is_hovered then
                 table.insert(overlaps, e)
             end
-            --e:check_if_hovered()
         end
 
         if #overlaps > 0 then
             table.sort(overlaps, get_closer_enemy)
-
             overlaps[1]:on_hit()
         end
     else
         --TODO: Play empty sound
     end
-
-    -- body
 end
 
 function get_closer_enemy(a, b)
     return a.position.y > b.position.y
 end
 
--- function love.keypressed(key, scancode, isrepeat)
---     if not isrepeat then
-
---         -- if key == "r" then
---         --     love.event.push("quit", "restart")
---         -- end
---         -- if game_state == GAME_STATES.title then
---         -- -- elseif game_state == GAME_STATES.game then
---         -- --     if key == "space" then
---         -- --         game_state = GAME_STATES.pause
---         -- --         is_paused = true
---         -- --         return
---         -- --     end
---         -- -- elseif game_state == GAME_STATES.pause then
---         -- --     if key == "space" then
---         -- --         --print("on pause pressing pause")
---         -- --         game_state = GAME_STATES.game
---         -- --         is_paused = false
---         -- --         return
---         -- --     end
---         -- elseif game_state == GAME_STATES.gameover then
-
---         -- end
---     end
-
--- end
-
 function change_gamestate(state)
     if state == GAME_STATES.game then
+    end
+    if state == GAME_STATES.gameover then
+        love.mouse.setVisible(true)
+        set_bgcolor_from_hex(COLORS.BLACK)
     end
     game_state = state
 end
@@ -416,10 +325,6 @@ function goto_gameover(reason)
     bg_music:stop()
 end
 
-function draw_title()
-
-end
-
 function draw_game()
     love.graphics.draw(background_img, 0, 0)
 
@@ -457,7 +362,7 @@ end
 function draw_gameover()
     love.graphics.push("all")
     set_color_from_hex(COLORS.WHITE)
-    love.graphics.print("Game Over", 37, 8, 0, 0.6, 0.6)
+    love.graphics.print("Game Over", 90, 80, 0, 0.4, 0.4)
     love.graphics.pop()
 end
 
@@ -477,12 +382,13 @@ function start_game()
     --spawner:start()
     --high_score = load_high_score()
     change_gamestate(GAME_STATES.game)
+    love.mouse.setVisible(false)
     --bg_music:setVolume(5.2)
     if not is_debug_on then
         bg_music:play()
     end
 
-    --    spawner:reset()
+    --spawner:reset()
 end
 
 function reset_game()
@@ -491,19 +397,6 @@ function reset_game()
     for b in pairs(blood_container) do
         blood_container[b] = nil
     end
-end
-
-function update_game(dt)
-
-end
-
-function update_pause()
-
-end
-
-function show_info()
-    change_gamestate(GAME_STATES.info)
-    --gamestate = gamestates.info
 end
 
 function save_high_score(score)

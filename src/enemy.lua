@@ -114,11 +114,11 @@ function BaseEnemy:update(dt)
     self.is_hovered = is_colliding(mouse.hitbox, self.hitbox) and self.is_alive
     self.tmr_shoot:update()
     self.hitbox:update()
-    self.alert_icon.position.x = self.position.x
-    self.alert_icon.position.y = self.position.y - 10
+    self.alert_icon.position.x = self.hitbox.x
+    self.alert_icon.position.y = self.hitbox.y - 15
 
-    self.muzzle_flash.position.x = self.position.x + 3
-    self.muzzle_flash.position.y = self.position.y + 10
+    self.muzzle_flash.position.x = self.hitbox.x + 5
+    self.muzzle_flash.position.y = self.hitbox.y + 15
 
     self.alert_icon:update(dt)
     self.muzzle_flash:update(dt)

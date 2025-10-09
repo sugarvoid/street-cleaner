@@ -93,5 +93,5 @@ function Mouse:draw()
         self.hitbox:draw()
     end
     love.graphics.draw(RETICLE_SHEET, reticle_frames[self.frame], self.position.x, self.position.y)
-    self.score_fx:draw()
+    --self.score_fx:draw()
 end

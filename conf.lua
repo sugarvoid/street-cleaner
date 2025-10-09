@@ -8,5 +8,5 @@ function love.conf(t)
     t.window.vsync = 1
     t.window.fullscreen = false
     t.modules.touch = false
-    t.console = true --TODO: Remove after debugging.
+    t.console = true
 end
