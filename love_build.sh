@@ -7,5 +7,3 @@ zip -9 -r street-cleaner.love . \
     '*.sh' \
     'todo.md' \
     'sublime-build.txt' \
-    'asset/image/down_mail.png' \
-    'asset/image/down_mail.svg'

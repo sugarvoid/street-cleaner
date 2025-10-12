@@ -35,22 +35,20 @@ bg_music:setLooping(true)
 
 input = baton.new {
     controls = {
-        left = { 'key:left', 'key:a', 'axis:leftx-', 'button:dpleft' },
-        right = { 'key:right', 'key:d', 'axis:leftx+', 'button:dpright' },
-        up = { 'key:up', 'key:w', 'axis:lefty-', 'button:dpup' },
-        down = { 'key:down', 'key:s', 'axis:lefty+', 'button:dpdown' },
-        focus = { 'key:x', 'button:x', 'key:lshift' },
-        shoot = { 'key:z', 'button:a', 'key:space' },
-        quit = { 'button:back', 'key:escape' },
-        reset = { 'key:r' },
-        pause = { 'key:p' },
+        left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
+        right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
+        up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
+        down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
+        focus = {'key:x', 'button:x', 'key:lshift'},
+        shoot = {'key:z', 'button:a', 'key:space'},
+        quit = {'button:back', 'key:escape'},
+        reset = {'key:r'},
+        pause = {'key:p'},
     },
     pairs = {
-        move = { 'left', 'right', 'up', 'down' } },
+    move = {'left', 'right', 'up', 'down'}},
     joystick = love.joystick.getJoysticks()[1],
 }
-
-
 
 all_clocks = {
     __clocks = {},
@@ -95,7 +93,7 @@ require("src.player_hit_fx")
 require("src.spawner")
 require("src.player")
 
-local screen_rect = { x = 0, y = 0, w = 384, h = 216 }
+local screen_rect = {x = 0, y = 0, w = 384, h = 216}
 
 mouse = Mouse()
 spawner = Spawner()
@@ -136,9 +134,9 @@ function love.load()
     love.graphics.setFont(font)
 
     -- if your code was optimized for fullHD:
-    window = { translateX = 0, translateY = 0, scale = 3, width = 384, height = 216 }
+    window = {translateX = 0, translateY = 0, scale = 3, width = 384, height = 216}
     width, height = love.graphics.getDimensions()
-    love.window.setMode(width, height, { resizable = true, borderless = false })
+    love.window.setMode(width, height, {resizable = true, borderless = false})
     resize(width, height) -- update new translation and scale
 
     start_game()
@@ -165,7 +163,7 @@ function love.update(dt)
         if show_hurt > 0 then
             show_hurt = show_hurt - 1
         end
-        for _, container in ipairs({ enemies, blood_container, bhit_container }) do
+        for _, container in ipairs({enemies, blood_container, bhit_container}) do
             for _, obj in ipairs(container) do
                 obj:update(dt)
             end
@@ -175,6 +173,7 @@ function love.update(dt)
     end
 
     if game_state == GAME_STATES.pause then
+        update_pause()
     end
 
     if game_state == GAME_STATES.gameover then
@@ -201,14 +200,6 @@ function love.update(dt)
 
     mx = math.floor((love.mouse.getX() - window.translateX) / window.scale + 0.5)
     my = math.floor((love.mouse.getY() - window.translateY) / window.scale + 0.5)
-
-    if game_state == GAME_STATES.game then
-        update_game(dt)
-    end
-
-    if game_state == GAME_STATES.pause then
-        update_pause()
-    end
 
     input:update()
 
@@ -368,13 +359,13 @@ end
 
 function is_on_screen(obj)
     if ((obj.x >= screen_rect.x + screen_rect.w) or
-            (obj.x + obj.w <= screen_rect.x) or
-            (obj.y >= screen_rect.y + screen_rect.h) or
-            (obj.y + obj.h <= screen_rect.y)) then
-        return false
-    else
-        return true
-    end
+        (obj.x + obj.w <= screen_rect.x) or
+        (obj.y >= screen_rect.y + screen_rect.h) or
+    (obj.y + obj.h <= screen_rect.y)) then
+    return false
+else
+    return true
+end
 end
 
 function start_game()
