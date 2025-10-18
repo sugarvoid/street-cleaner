@@ -2,6 +2,8 @@
 # Street Cleaner Demo
 A small showcase of an asset pack I found. Not a full game. 
 
+https://github.com/user-attachments/assets/5048a823-c954-43a7-a49e-f841f1cfc8fb
+
 
 ## Controls
 
